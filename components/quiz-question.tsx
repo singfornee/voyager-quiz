@@ -7,24 +7,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/contexts/language-context"
 // First, let's add imports for the icons we'll need for questions 1-4
-import {
-  Calendar,
-  Compass,
-  Map,
-  Camera,
-  Globe,
-  Zap,
-  Sparkles,
-  MapPin,
-  Palette,
-  BookOpen,
-  Hotel,
-  Home,
-  Search,
-  Clock,
-  CameraIcon,
-  Coffee,
-} from "lucide-react"
+import { Calendar, Compass, Map, Camera, Globe, Zap, MapPin, Palette, Hotel, Home, Search } from "lucide-react"
 
 interface QuizQuestionProps {
   question: {
@@ -82,14 +65,12 @@ export default function QuizQuestion({ question, onAnswer, progress, loading }: 
           { title: "Almost there", subtitle: "Finalizing your travel profile" },
         ]
 
-  // Check if this is the activity question (question 7)
-  const isActivityQuestion = question.id === 7
-  // Check if this is the environment question (question 6)
-  const isEnvironmentQuestion = question.id === 6
-  // Check if this is the spending question (question 8)
-  const isSpendingQuestion = question.id === 8
-  // Check if this is the social question (question 9)
-  const isSocialQuestion = question.id === 9
+  // Check if this is the activity question (question 4)
+  const isActivityQuestion = question.id === 4
+  // Check if this is the environment question (question 3)
+  const isEnvironmentQuestion = question.id === 3
+  // Check if this is the social question (question 6)
+  const isSocialQuestion = question.id === 6
 
   // Translated environment types for display
   const environmentTypes = {
@@ -103,31 +84,14 @@ export default function QuizQuestion({ question, onAnswer, progress, loading }: 
     zh: ["博物館和文化", "酒吧和夜生活", "冒險和運動", "美食和餐飲"],
   }
 
-  // Spending types for display
-  const spendingTypes = {
-    en: ["Accommodations", "Food & Dining", "Activities", "Shopping"],
-    zh: ["住宿", "美食餐飲", "活動體驗", "購物"],
-  }
-
   // Social types for display
   const socialTypes = {
     en: ["Solo", "Couple", "Friends", "Family"],
     zh: ["獨自", "伴侶", "朋友", "家人"],
   }
 
-  // Icons for spending types
-  const spendingIcons = ["🏨", "🍽️", "🎭", "🛍️"]
-
   // Icons for social types
   const socialIcons = ["🧳", "💑", "👯", "👨‍👩‍👧"]
-
-  // Background images for spending types
-  const bgImagesSpending = [
-    "bg-gradient-to-br from-blue-500/90 to-indigo-600/90",
-    "bg-gradient-to-br from-amber-500/90 to-orange-600/90",
-    "bg-gradient-to-br from-emerald-500/90 to-green-600/90",
-    "bg-gradient-to-br from-pink-500/90 to-rose-600/90",
-  ]
 
   // Background images for social types
   const bgImagesSocial = [
@@ -153,23 +117,11 @@ export default function QuizQuestion({ question, onAnswer, progress, loading }: 
         <Palette className="h-5 w-5" key={index} />,
         <MapPin className="h-5 w-5" key={index} />,
       ],
-      3: [
+      5: [
         <Search className="h-5 w-5" key={index} />,
         <Compass className="h-5 w-5" key={index} />,
         <Map className="h-5 w-5" key={index} />,
         <Globe className="h-5 w-5" key={index} />,
-      ],
-      4: [
-        <Clock className="h-5 w-5" key={index} />,
-        <Coffee className="h-5 w-5" key={index} />,
-        <Sparkles className="h-5 w-5" key={index} />,
-        <Zap className="h-5 w-5" key={index} />,
-      ],
-      5: [
-        <CameraIcon className="h-5 w-5" key={index} />,
-        <BookOpen className="h-5 w-5" key={index} />,
-        <Palette className="h-5 w-5" key={index} />,
-        <Sparkles className="h-5 w-5" key={index} />,
       ],
     }
 
@@ -177,9 +129,7 @@ export default function QuizQuestion({ question, onAnswer, progress, loading }: 
     const emojis: Record<number, string[]> = {
       1: ["📅", "⚡", "🧭", "📱"],
       2: ["🏨", "🛏️", "📸", "🏙️"],
-      3: ["⭐", "🔍", "🗺️", "📱"],
-      4: ["⏱️", "☕", "✨", "🌊"],
-      5: ["🗿", "🌆", "📸", "🤳"],
+      5: ["⭐", "🔍", "🗺️", "📱"],
     }
 
     // Background gradients for each question's options
@@ -196,23 +146,11 @@ export default function QuizQuestion({ question, onAnswer, progress, loading }: 
         "bg-gradient-to-br from-fuchsia-500/90 to-pink-600/90",
         "bg-gradient-to-br from-amber-500/90 to-yellow-600/90",
       ],
-      3: [
+      5: [
         "bg-gradient-to-br from-sky-500/90 to-blue-600/90",
         "bg-gradient-to-br from-lime-500/90 to-green-600/90",
         "bg-gradient-to-br from-amber-500/90 to-orange-600/90",
         "bg-gradient-to-br from-rose-500/90 to-pink-600/90",
-      ],
-      4: [
-        "bg-gradient-to-br from-red-500/90 to-orange-600/90",
-        "bg-gradient-to-br from-teal-500/90 to-cyan-600/90",
-        "bg-gradient-to-br from-violet-500/90 to-indigo-600/90",
-        "bg-gradient-to-br from-amber-500/90 to-yellow-600/90",
-      ],
-      5: [
-        "bg-gradient-to-br from-blue-500/90 to-sky-600/90",
-        "bg-gradient-to-br from-emerald-500/90 to-green-600/90",
-        "bg-gradient-to-br from-fuchsia-500/90 to-pink-600/90",
-        "bg-gradient-to-br from-amber-500/90 to-orange-600/90",
       ],
     }
 
@@ -230,7 +168,7 @@ export default function QuizQuestion({ question, onAnswer, progress, loading }: 
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <p className="text-sm font-medium text-violet-600">
-              {t.quiz.questionPrefix} {question.id} {t.quiz.ofQuestions} 9
+              {t.quiz.questionPrefix} {question.id} {t.quiz.ofQuestions} 6
             </p>
             <p className="text-sm font-medium text-violet-600">
               {Math.round(progress)}% {t.quiz.complete}
@@ -274,16 +212,12 @@ export default function QuizQuestion({ question, onAnswer, progress, loading }: 
                   "bg-[url('/adventure-sports.png')]",
                   "bg-[url('/food-dining.png')]",
                 ][index] + " bg-cover bg-center"
-            } else if (isSpendingQuestion) {
-              displayText = spendingTypes[language === "zh" ? "zh" : "en"][index]
-              displayIcon = spendingIcons[index]
-              bgClass = bgImagesSpending[index]
             } else if (isSocialQuestion) {
               displayText = socialTypes[language === "zh" ? "zh" : "en"][index]
               displayIcon = socialIcons[index]
               bgClass = bgImagesSocial[index]
             } else {
-              // For questions 1-5, use the new data
+              // For questions 1, 2, and 5, use the new data
               const data = getQuestionData(question.id, index)
               displayText = data.displayText
               displayIcon = data.emoji
@@ -300,13 +234,13 @@ export default function QuizQuestion({ question, onAnswer, progress, loading }: 
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 className={`relative flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl transition-all duration-300 border-2 h-28 sm:h-36
-                  ${
-                    isSelected
-                      ? "border-white shadow-inner"
-                      : isHovered
-                        ? "border-white/70 shadow-lg"
-                        : "border-transparent hover:border-white/50 shadow-md"
-                  } ${bgClass} overflow-hidden`}
+                 ${
+                   isSelected
+                     ? "border-white shadow-inner"
+                     : isHovered
+                       ? "border-white/70 shadow-lg"
+                       : "border-transparent hover:border-white/50 shadow-md"
+                 } ${bgClass} overflow-hidden`}
               >
                 {(isEnvironmentQuestion || isActivityQuestion) && (
                   <div
@@ -337,10 +271,8 @@ export default function QuizQuestion({ question, onAnswer, progress, loading }: 
                 >
                   <span className="text-5xl mb-3">{displayIcon}</span>
                   <span className="text-white font-semibold text-center text-lg">
-                    {/* For questions 1-5, show the full option text */}
-                    {!isEnvironmentQuestion && !isActivityQuestion && !isSpendingQuestion && !isSocialQuestion
-                      ? option
-                      : displayText}
+                    {/* For questions 1, 2, and 5, show the full option text */}
+                    {!isEnvironmentQuestion && !isActivityQuestion && !isSocialQuestion ? option : displayText}
                   </span>
                 </motion.div>
 

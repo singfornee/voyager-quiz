@@ -209,8 +209,8 @@ export default function QuizContainer({ skipIntro = false }: QuizContainerProps)
 
       // Update preferences based on the selected answer
       if (optionIndex !== -1) {
-        if (question.id <= 5) {
-          // Original preference questions
+        if (question.id <= 2 || question.id === 5) {
+          // Questions 1, 2, and 5 affect general preferences
           const answerPreferences = question.preferences?.[optionIndex]
           if (answerPreferences) {
             setPreferences((prev) => ({
@@ -222,7 +222,7 @@ export default function QuizContainer({ skipIntro = false }: QuizContainerProps)
               aesthetics: prev.aesthetics + answerPreferences.aesthetics,
             }))
           }
-        } else if (question.id === 6) {
+        } else if (question.id === 3) {
           // Environment preference question
           const envPreferences = question.environmentPreferences?.[optionIndex]
           if (envPreferences) {
@@ -236,8 +236,8 @@ export default function QuizContainer({ skipIntro = false }: QuizContainerProps)
               },
             }))
           }
-        } else if (question.id === 7) {
-          // Activity preference question (replacing climate)
+        } else if (question.id === 4) {
+          // Activity preference question
           const activityPreferences = question.activityPreferences?.[optionIndex]
           if (activityPreferences) {
             setPreferences((prev) => ({
@@ -250,20 +250,7 @@ export default function QuizContainer({ skipIntro = false }: QuizContainerProps)
               },
             }))
           }
-        } else if (question.id === 8) {
-          // Spending preferences question
-          const answerPreferences = question.preferences?.[optionIndex]
-          if (answerPreferences) {
-            setPreferences((prev) => ({
-              ...prev,
-              spontaneity: prev.spontaneity + answerPreferences.spontaneity,
-              exploration: prev.exploration + answerPreferences.exploration,
-              luxury: prev.luxury + answerPreferences.luxury,
-              activity: prev.activity + answerPreferences.activity,
-              aesthetics: prev.aesthetics + answerPreferences.aesthetics,
-            }))
-          }
-        } else if (question.id === 9) {
+        } else if (question.id === 6) {
           // Social preferences question
           const answerPreferences = question.preferences?.[optionIndex]
           const socialPreferences = question.socialPreferences?.[optionIndex]
@@ -309,7 +296,8 @@ export default function QuizContainer({ skipIntro = false }: QuizContainerProps)
     setLoading(true)
     try {
       // Normalize preferences to percentages
-      const totalOriginalQuestions = 5 // First 5 questions
+      // Adjust the calculation for fewer questions
+      const totalOriginalQuestions = 3 // Questions 1, 2, and 5 affect general preferences
       const maxScorePerCategory = 100 * totalOriginalQuestions
 
       const normalizedPreferences = {

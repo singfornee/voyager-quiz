@@ -1,95 +1,76 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import Image from "next/image"
-import { ArrowRight, Globe, MapPin, Camera } from "lucide-react"
+import { motion } from "framer-motion"
 import { useLanguage } from "@/contexts/language-context"
+import { ArrowRight, Clock } from "lucide-react"
 
 interface QuizStartProps {
   onStart: () => void
 }
 
 export default function QuizStart({ onStart }: QuizStartProps) {
-  const { t, language } = useLanguage()
+  const { language, t } = useLanguage()
 
   return (
-    <Card className="w-full rounded-3xl overflow-hidden shadow-2xl border-0 glassmorphism">
-      <CardContent className="p-0">
-        <div className="flex flex-col items-center">
-          <div className="relative w-full h-64 mb-0">
-            <Image
-              src="/travel-collage-gen-z.png"
-              alt="Travel vibes"
-              fill
-              className="object-cover"
-              priority
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              quality={85}
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/90"></div>
-
-            <div className="absolute top-4 left-0 right-0 flex justify-center">
-              <div className="bg-gradient-to-r from-violet-500 to-pink-500 text-white px-6 py-2 rounded-full text-lg font-medium shadow-md">
-                {language === "en" ? "1-min quiz · Discover your travel style" : "1分鐘測驗 · 探索你的旅行風格"}
-              </div>
-            </div>
-
-            <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2">
-              {["#WanderlustVibes", "#TravelTok", "#MainCharacterEnergy", "#BucketList"].map((tag, i) => (
-                <span
-                  key={i}
-                  className="bg-white/30 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="px-6 py-8 text-center">
-            <h2 className="text-2xl sm:text-3xl font-extrabold mb-4 gradient-text">
-              {language === "en" ? "Find Your Travel Aesthetic" : "發現你的旅行風格"}
-            </h2>
-
-            <p className="text-gray-600 mb-8">
-              {language === "en"
-                ? "9 quick Qs to reveal your perfect travel vibe and dream destinations! ✈️"
-                : "9個快速問題，揭示你的完美旅行氛圍和夢想目的地！✈️"}
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              {[
-                {
-                  icon: <Globe className="h-6 w-6" />,
-                  text: language === "en" ? "Discover your travel personality" : "發現你的旅行個性",
-                },
-                {
-                  icon: <MapPin className="h-6 w-6" />,
-                  text: language === "en" ? "Get personalized destination recs" : "獲取個性化目的地推薦",
-                },
-                {
-                  icon: <Camera className="h-6 w-6" />,
-                  text: language === "en" ? "Find your travel aesthetic" : "找到你的旅行美學",
-                },
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col items-center text-center p-3 rounded-xl bg-violet-50">
-                  <div className="bg-violet-100 p-2 rounded-full mb-2 text-violet-600">{item.icon}</div>
-                  <p className="text-xs sm:text-sm text-gray-600">{item.text}</p>
-                </div>
-              ))}
-            </div>
-
-            <Button
-              onClick={onStart}
-              size="lg"
-              className="w-full bg-gradient-to-r from-violet-600 to-pink-500 hover:opacity-90 rounded-xl text-lg font-bold h-14"
-            >
-              {t.quiz.startButton} <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+    <div className="w-full max-w-3xl mx-auto px-4 py-8">
+      <motion.div
+        className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Header image */}
+        <div className="relative h-48 sm:h-64 md:h-80 bg-gradient-to-r from-violet-500 to-purple-600 overflow-hidden">
+          <div className="absolute inset-0 bg-[url('/travel-collage-gen-z.png')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white text-center px-4 drop-shadow-lg">
+              {t.start.discoverYourTravelPersonality}
+            </h1>
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Content */}
+        <div className="p-6 sm:p-8">
+          <div className="flex items-center justify-center mb-6 bg-violet-50 rounded-full py-2 px-4 w-fit mx-auto">
+            <Clock className="h-4 w-4 text-violet-600 mr-2" />
+            <span className="text-sm font-medium text-violet-700">
+              {language === "zh" ? "只需 1 分鐘 • 6 個問題" : "Just 1 minute • 6 questions"}
+            </span>
+          </div>
+
+          <p className="text-gray-600 text-center mb-8 max-w-lg mx-auto">{t.start.quizDescription}</p>
+
+          <div className="flex justify-center">
+            <motion.button
+              onClick={onStart}
+              className="px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-medium text-lg flex items-center justify-center hover:opacity-90 transition-opacity"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {t.start.startQuiz} <ArrowRight className="ml-2 h-5 w-5" />
+            </motion.button>
+          </div>
+
+          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+            <div className="p-3 bg-violet-50 rounded-xl">
+              <div className="text-2xl mb-1">🧭</div>
+              <div className="text-sm font-medium text-violet-800">{t.start.feature1}</div>
+            </div>
+            <div className="p-3 bg-violet-50 rounded-xl">
+              <div className="text-2xl mb-1">🌍</div>
+              <div className="text-sm font-medium text-violet-800">{t.start.feature2}</div>
+            </div>
+            <div className="p-3 bg-violet-50 rounded-xl">
+              <div className="text-2xl mb-1">💡</div>
+              <div className="text-sm font-medium text-violet-800">{t.start.feature3}</div>
+            </div>
+            <div className="p-3 bg-violet-50 rounded-xl">
+              <div className="text-2xl mb-1">🎯</div>
+              <div className="text-sm font-medium text-violet-800">{t.start.feature4}</div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   )
 }

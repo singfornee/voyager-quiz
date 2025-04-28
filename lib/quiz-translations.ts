@@ -32,7 +32,7 @@ export interface QuizQuestion {
   }[]
 }
 
-// English questions
+// Modify the English questions array to keep only 6 key questions
 export const enQuestions: QuizQuestion[] = [
   {
     id: 1,
@@ -68,34 +68,29 @@ export const enQuestions: QuizQuestion[] = [
   },
   {
     id: 3,
-    question: "How do you discover the best spots?",
+    question: "What type of environment do you prefer for your travels?",
     options: [
-      "Top-rated places on review sites",
-      "Getting lost and finding hidden gems",
-      "Local recommendations and off-the-beaten-path spots",
-      "Places that are trending on social media",
+      "Beach and coastal areas",
+      "Urban cities with vibrant culture",
+      "Mountains and natural landscapes",
+      "Countryside and rural retreats",
     ],
-    preferences: [
-      { spontaneity: 40, exploration: 30, luxury: 70, activity: 60, aesthetics: 60 },
-      { spontaneity: 90, exploration: 95, luxury: 30, activity: 80, aesthetics: 70 },
-      { spontaneity: 75, exploration: 90, luxury: 50, activity: 70, aesthetics: 60 },
-      { spontaneity: 60, exploration: 40, luxury: 65, activity: 60, aesthetics: 95 },
+    environmentPreferences: [
+      { beach: 90, city: 30, mountains: 20, countryside: 40 },
+      { beach: 20, city: 90, mountains: 10, countryside: 20 },
+      { beach: 30, city: 20, mountains: 90, countryside: 60 },
+      { beach: 20, city: 10, mountains: 50, countryside: 90 },
     ],
   },
   {
     id: 4,
-    question: "What's your travel pace?",
-    options: [
-      "Fast-paced, seeing everything possible",
-      "Slow and chill, quality over quantity",
-      "Balance of sightseeing and relaxation",
-      "Wherever the vibe takes me that day",
-    ],
-    preferences: [
-      { spontaneity: 40, exploration: 75, luxury: 60, activity: 95, aesthetics: 70 },
-      { spontaneity: 60, exploration: 50, luxury: 80, activity: 30, aesthetics: 65 },
-      { spontaneity: 60, exploration: 70, luxury: 75, activity: 60, aesthetics: 60 },
-      { spontaneity: 90, exploration: 65, luxury: 50, activity: 50, aesthetics: 80 },
+    question: "Your favorite activities?",
+    options: ["🏛️ Museums & Culture", "🍹 Bars & Nightlife", "🧗‍♀️ Adventure & Sports", "🍜 Food & Dining"],
+    activityPreferences: [
+      { cultural: 90, nightlife: 30, adventure: 20, culinary: 50 },
+      { cultural: 20, nightlife: 90, adventure: 40, culinary: 60 },
+      { cultural: 30, nightlife: 20, adventure: 90, culinary: 30 },
+      { cultural: 40, nightlife: 50, adventure: 20, culinary: 90 },
     ],
   },
   {
@@ -114,53 +109,8 @@ export const enQuestions: QuizQuestion[] = [
       { spontaneity: 75, exploration: 50, luxury: 65, activity: 80, aesthetics: 85 },
     ],
   },
-  // Environment preference question
   {
     id: 6,
-    question: "What type of environment do you prefer for your travels?",
-    options: [
-      "Beach and coastal areas",
-      "Urban cities with vibrant culture",
-      "Mountains and natural landscapes",
-      "Countryside and rural retreats",
-    ],
-    environmentPreferences: [
-      { beach: 90, city: 30, mountains: 20, countryside: 40 },
-      { beach: 20, city: 90, mountains: 10, countryside: 20 },
-      { beach: 30, city: 20, mountains: 90, countryside: 60 },
-      { beach: 20, city: 10, mountains: 50, countryside: 90 },
-    ],
-  },
-  // New activity preference question (replacing climate)
-  {
-    id: 7,
-    question: "Your favorite activities?",
-    options: ["🏛️ Museums & Culture", "🍹 Bars & Nightlife", "🧗‍♀️ Adventure & Sports", "🍜 Food & Dining"],
-    activityPreferences: [
-      { cultural: 90, nightlife: 30, adventure: 20, culinary: 50 },
-      { cultural: 20, nightlife: 90, adventure: 40, culinary: 60 },
-      { cultural: 30, nightlife: 20, adventure: 90, culinary: 30 },
-      { cultural: 40, nightlife: 50, adventure: 20, culinary: 90 },
-    ],
-  },
-  {
-    id: 8,
-    question: "Where do you prefer to splurge when traveling?",
-    options: [
-      "Luxury accommodations with amazing views",
-      "Unique food experiences and fine dining",
-      "Exclusive activities and guided tours",
-      "Shopping and bringing home special items",
-    ],
-    preferences: [
-      { spontaneity: 30, exploration: 40, luxury: 95, activity: 50, aesthetics: 70 },
-      { spontaneity: 60, exploration: 70, luxury: 80, activity: 60, aesthetics: 75 },
-      { spontaneity: 70, exploration: 90, luxury: 70, activity: 90, aesthetics: 60 },
-      { spontaneity: 60, exploration: 60, luxury: 85, activity: 70, aesthetics: 95 },
-    ],
-  },
-  {
-    id: 9,
     question: "Who do you prefer to travel with?",
     options: [
       "Solo - I love the freedom to do whatever I want",
@@ -183,7 +133,7 @@ export const enQuestions: QuizQuestion[] = [
   },
 ]
 
-// Traditional Mandarin questions
+// Update the Chinese questions to match the same 6 questions
 export const zhQuestions: QuizQuestion[] = [
   {
     id: 1,
@@ -219,24 +169,24 @@ export const zhQuestions: QuizQuestion[] = [
   },
   {
     id: 3,
-    question: "你如何發現最好的地方？",
-    options: ["評價網站上的高評分地點", "迷路並發現隱藏的寶藏", "當地人推薦和非熱門景點", "社交媒體上流行的地方"],
-    preferences: [
-      { spontaneity: 40, exploration: 30, luxury: 70, activity: 60, aesthetics: 60 },
-      { spontaneity: 90, exploration: 95, luxury: 30, activity: 80, aesthetics: 70 },
-      { spontaneity: 75, exploration: 90, luxury: 50, activity: 70, aesthetics: 60 },
-      { spontaneity: 60, exploration: 40, luxury: 65, activity: 60, aesthetics: 95 },
+    question: "你喜歡哪種旅行環境？",
+    options: ["海灘和沿海地區", "充滿活力文化的城市", "山脈和自然景觀", "鄉村和農村度假地"],
+    environmentPreferences: [
+      { beach: 90, city: 30, mountains: 20, countryside: 40 },
+      { beach: 20, city: 90, mountains: 10, countryside: 20 },
+      { beach: 30, city: 20, mountains: 90, countryside: 60 },
+      { beach: 20, city: 10, mountains: 50, countryside: 90 },
     ],
   },
   {
     id: 4,
-    question: "你的旅行節奏是什麼？",
-    options: ["快節奏，盡可能看更多景點", "慢節奏，注重質量而非數量", "觀光和放鬆的平衡", "隨心所欲，跟隨當天的氛圍"],
-    preferences: [
-      { spontaneity: 40, exploration: 75, luxury: 60, activity: 95, aesthetics: 70 },
-      { spontaneity: 60, exploration: 50, luxury: 80, activity: 30, aesthetics: 65 },
-      { spontaneity: 60, exploration: 70, luxury: 75, activity: 60, aesthetics: 60 },
-      { spontaneity: 90, exploration: 65, luxury: 50, activity: 50, aesthetics: 80 },
+    question: "你最喜歡的活動？",
+    options: ["🏛️ 博物館和文化", "🍹 酒吧和夜生活", "🧗‍♀️ 冒險和運動", "🍜 美食和餐飲"],
+    activityPreferences: [
+      { cultural: 90, nightlife: 30, adventure: 20, culinary: 50 },
+      { cultural: 20, nightlife: 90, adventure: 40, culinary: 60 },
+      { cultural: 30, nightlife: 20, adventure: 90, culinary: 30 },
+      { cultural: 40, nightlife: 50, adventure: 20, culinary: 90 },
     ],
   },
   {
@@ -255,43 +205,8 @@ export const zhQuestions: QuizQuestion[] = [
       { spontaneity: 75, exploration: 50, luxury: 65, activity: 80, aesthetics: 85 },
     ],
   },
-  // Environment preference question
   {
     id: 6,
-    question: "你喜歡哪種旅行環境？",
-    options: ["海灘和沿海地區", "充滿活力文化的城市", "山脈和自然景觀", "鄉村和農村度假地"],
-    environmentPreferences: [
-      { beach: 90, city: 30, mountains: 20, countryside: 40 },
-      { beach: 20, city: 90, mountains: 10, countryside: 20 },
-      { beach: 30, city: 20, mountains: 90, countryside: 60 },
-      { beach: 20, city: 10, mountains: 50, countryside: 90 },
-    ],
-  },
-  // New activity preference question (replacing climate)
-  {
-    id: 7,
-    question: "你最喜歡的活動？",
-    options: ["🏛️ 博物館和文化", "🍹 酒吧和夜生活", "🧗‍♀️ 冒險和運動", "🍜 美食和餐飲"],
-    activityPreferences: [
-      { cultural: 90, nightlife: 30, adventure: 20, culinary: 50 },
-      { cultural: 20, nightlife: 90, adventure: 40, culinary: 60 },
-      { cultural: 30, nightlife: 20, adventure: 90, culinary: 30 },
-      { cultural: 40, nightlife: 50, adventure: 20, culinary: 90 },
-    ],
-  },
-  {
-    id: 8,
-    question: "旅行時你喜歡在哪方面奢侈一點？",
-    options: ["豪華住宿，有絕美景觀", "獨特的美食體驗和高級餐廳", "獨家活動和導覽行程", "購物和帶回特別的紀念品"],
-    preferences: [
-      { spontaneity: 30, exploration: 40, luxury: 95, activity: 50, aesthetics: 70 },
-      { spontaneity: 60, exploration: 70, luxury: 80, activity: 60, aesthetics: 75 },
-      { spontaneity: 70, exploration: 90, luxury: 70, activity: 90, aesthetics: 60 },
-      { spontaneity: 60, exploration: 60, luxury: 85, activity: 70, aesthetics: 95 },
-    ],
-  },
-  {
-    id: 9,
     question: "你喜歡和誰一起旅行？",
     options: [
       "獨自旅行 - 我喜歡自由自在做任何事",

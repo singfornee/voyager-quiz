@@ -12,27 +12,16 @@ import {
   AlertCircle,
   Loader2,
   Mail,
-  Compass,
   Map,
-  Camera,
-  Globe,
-  Zap,
   Lightbulb,
-  Sparkles,
-  Calendar,
-  MapPin,
-  Palette,
   Copy,
   Instagram,
-  Wallet,
-  Coffee,
   Users,
 } from "lucide-react"
 import { useState, useRef, useTransition, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { subscribeToMailchimp } from "@/app/actions/subscribe-email"
 import dynamic from "next/dynamic"
-import TravelStyleMeter from "./travel-style-meter"
 import DestinationCard from "./destination-card"
 import AnimatedBackground from "./animated-background"
 import { analytics } from "@/lib/analytics"
@@ -78,7 +67,7 @@ const getPersonalizedTravelHacks = (profile: TravelProfile, language: string) =>
         }
         return tip.replace(/\bgirl\b/gi, "traveler").replace(/\bgirls\b/gi, "travelers")
       })
-      .slice(0, 5) // Limit to 5 tips
+      .slice(0, 3) // Limit to 3 tips
   }
 
   // Otherwise, generate specific hacks based on traveler type and preferences
@@ -188,34 +177,30 @@ const getPersonalizedTravelHacks = (profile: TravelProfile, language: string) =>
     )
   }
 
-  // Ensure we have at least 5 hacks
+  // Ensure we have at least 3 hacks
   const defaultHacks =
     language === "zh"
       ? [
           "Google航班「探索」功能設置多目的地價格提醒，找到超值機票",
           "一個國際轉換器加一個插線板為所有設備充電",
           "截圖保存登機牌和預訂信息，以便離線訪問",
-          "使用當地交通應用，比國際應用更準確且價格更低",
-          "在Instagram上關注當地美食博主獲取最新餐廳推薦",
         ]
       : [
           "Use Google Flights 'Explore' + price alerts to find deals 40% below average",
           "One power strip + one adapter charges all devices in foreign countries",
           "Screenshot boarding passes & bookings for offline access in no-service areas",
-          "Local transportation apps are cheaper than international ones by up to 50%",
-          "Follow local food bloggers on IG for real-time restaurant recommendations",
         ]
 
   // Fill in with default hacks if needed
-  while (hacks.length < 5) {
+  while (hacks.length < 3) {
     const randomHack = defaultHacks[Math.floor(Math.random() * defaultHacks.length)]
     if (!hacks.includes(randomHack)) {
       hacks.push(randomHack)
     }
   }
 
-  // Return only the first 5 hacks to avoid overwhelming the user
-  return hacks.slice(0, 5)
+  // Return only the first 3 hacks to avoid overwhelming the user
+  return hacks.slice(0, 3)
 }
 
 export default function QuizResults({ profile, onReset }: QuizResultsProps) {
@@ -286,8 +271,6 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
     // Force open the share modal directly without any intermediate steps
     setShowShareModal(true)
   }
-
-  // Add this function after the handleShare function in the QuizResults component
 
   const generateShareableImage = async () => {
     if (!resultRef.current) return null
@@ -637,504 +620,7 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
     return ctas[profile.travelerType] || "Get personalized travel recommendations"
   }
 
-  // Get travel preferences from the profile or generate fallbacks
-  const getTravelPreferences = () => {
-    // Define the preference spectrums with opposing traits
-    const preferenceSpectrums = [
-      {
-        id: "planning",
-        leftLabel: language === "zh" ? "詳細計劃者" : "Detailed Planner",
-        rightLabel: language === "zh" ? "自發性" : "Spontaneous",
-        leftIcon: <Calendar className="h-5 w-5" />,
-        rightIcon: <Zap className="h-5 w-5" />,
-        emoji: "🧭",
-        color: "violet",
-        value: profile.preferences ? profile.preferences.spontaneity : 65,
-      },
-      {
-        id: "exploration",
-        leftLabel: language === "zh" ? "熱門景點" : "Tourist Spots",
-        rightLabel: language === "zh" ? "隱藏寶地" : "Hidden Gems",
-        leftIcon: <MapPin className="h-5 w-5" />,
-        rightIcon: <Compass className="h-5 w-5" />,
-        emoji: "🔍",
-        color: "emerald",
-        value: profile.preferences ? profile.preferences.exploration : 70,
-      },
-      {
-        id: "comfort",
-        leftLabel: language === "zh" ? "預算" : "Budget",
-        rightLabel: language === "zh" ? "奢華" : "Luxury",
-        leftIcon: <Wallet className="h-5 w-5" />,
-        rightIcon: <Sparkles className="h-5 w-5" />,
-        emoji: "💰",
-        color: "amber",
-        value: profile.preferences ? profile.preferences.luxury : 55,
-      },
-      {
-        id: "pace",
-        leftLabel: language === "zh" ? "放鬆" : "Relaxed",
-        rightLabel: language === "zh" ? "活躍" : "Active",
-        leftIcon: <Coffee className="h-5 w-5" />,
-        rightIcon: <Zap className="h-5 w-5" />,
-        emoji: "⚡",
-        color: "rose",
-        value: profile.preferences ? profile.preferences.activity : 60,
-      },
-      {
-        id: "focus",
-        leftLabel: language === "zh" ? "體驗" : "Experience",
-        rightLabel: language === "zh" ? "攝影" : "Photos",
-        leftIcon: <Globe className="h-5 w-5" />,
-        rightIcon: <Camera className="h-5 w-5" />,
-        emoji: "📸",
-        color: "pink",
-        value: profile.preferences ? profile.preferences.aesthetics : 75,
-      },
-    ]
-
-    return preferenceSpectrums
-  }
-
-  // Get social preferences from the profile
-  const getSocialPreferences = () => {
-    if (!profile.preferences?.social) return null
-
-    // Find the highest social preference
-    const socialPrefs = profile.preferences.social
-    const entries = Object.entries(socialPrefs) as [string, number][]
-    const sorted = entries.sort((a, b) => b[1] - a[1])
-
-    if (sorted.length === 0 || sorted[0][1] === 0) return null
-
-    return {
-      type: sorted[0][0],
-      value: sorted[0][1],
-    }
-  }
-
-  // Generate destination recommendations with match percentages and descriptions
-  const getDestinationRecommendations = () => {
-    // Define some sample destinations with detailed descriptions
-    const sampleDestinations = [
-      {
-        location: "Shibuya, Tokyo, Japan",
-        description: "where neon lights meet endless culture",
-        keywords: ["city", "nightlife", "shopping"],
-        matchPercentage: 95,
-      },
-      {
-        location: "Shoreditch, London, UK",
-        description: "edgy art scenes and sick cafes",
-        keywords: ["urban", "culture", "food"],
-        matchPercentage: 92,
-      },
-      {
-        location: "Brooklyn, New York City, USA",
-        description: "for those classic skyline views",
-        keywords: ["city", "nightlife", "art"],
-        matchPercentage: 89,
-      },
-      {
-        location: "Fitzroy, Melbourne, Australia",
-        description: "bohemian vibes and trendy eateries",
-        keywords: ["hipster", "coffee", "art"],
-        matchPercentage: 87,
-      },
-      {
-        location: "Le Marais, Paris, France",
-        description: "chic boutiques and historic charm",
-        keywords: ["fashion", "history", "food"],
-        matchPercentage: 85,
-      },
-    ]
-
-    // Add this new function inside getDestinationRecommendations
-    const getPersonalizedReason = (location: string, description: string, preferences: any) => {
-      const locLower = location.toLowerCase()
-      const descLower = description.toLowerCase()
-      const travelerType = profile.travelerType.toLowerCase()
-
-      // Personalized reasons based on traveler type and preferences
-      if (travelerType.includes("luxury") && (locLower.includes("bali") || locLower.includes("maldives"))) {
-        return "Perfect for your taste in exclusive resorts and premium experiences"
-      }
-
-      if (travelerType.includes("adventure") && (locLower.includes("zealand") || locLower.includes("patagonia"))) {
-        return "Matches your adventure-seeking spirit with world-class outdoor activities"
-      }
-
-      if (travelerType.includes("digital") && (locLower.includes("bali") || locLower.includes("lisbon"))) {
-        return "Ideal for your remote work lifestyle with great wifi and co-working spaces"
-      }
-
-      if (travelerType.includes("cultural") && (locLower.includes("kyoto") || locLower.includes("rome"))) {
-        return "Aligns with your passion for authentic cultural immersion"
-      }
-
-      if (preferences.aesthetics > 70 && (locLower.includes("santorini") || locLower.includes("paris"))) {
-        return "Perfect for your eye for beauty and Instagram-worthy moments"
-      }
-
-      if (preferences.activities?.nightlife > 70 && (locLower.includes("berlin") || locLower.includes("bangkok"))) {
-        return "Matches your love for vibrant nightlife and social scenes"
-      }
-
-      if (preferences.activities?.culinary > 70 && (locLower.includes("tokyo") || locLower.includes("lyon"))) {
-        return "Ideal for your foodie adventures with world-class cuisine"
-      }
-
-      if (preferences.environment?.beach > 70 && (locLower.includes("maldives") || locLower.includes("hawaii"))) {
-        return "Perfect for your beach-loving soul and ocean adventures"
-      }
-
-      if (preferences.environment?.mountains > 70 && (locLower.includes("swiss") || locLower.includes("nepal"))) {
-        return "Matches your mountain-seeking spirit and love for dramatic landscapes"
-      }
-
-      if (preferences.environment?.city > 70 && (locLower.includes("york") || locLower.includes("tokyo"))) {
-        return "Ideal for your urban exploration style and city energy"
-      }
-
-      // Default personalized reason based on traveler type
-      return `Perfectly matches your ${travelerType.replace(/er$/, "")} travel style`
-    }
-
-    // When returning the destinations, include the personalized reason
-    if (profile.destinations && profile.destinations.length > 0) {
-      return profile.destinations.map((destination, index) => {
-        // Extract location and description if possible
-        let location = destination
-        let description = ""
-
-        // Try to split on common patterns
-        if (destination.includes(" - ")) {
-          const parts = destination.split(" - ")
-          location = parts[0]
-          description = parts[1]
-        } else if (destination.includes(" for ")) {
-          const parts = destination.split(" - ")
-          location = parts[0]
-          description = "for " + parts[1]
-        } else if (destination.includes(" (")) {
-          const parts = destination.split(" (")
-          location = parts[0]
-          description = parts[1].replace(")", "")
-        }
-
-        // Add country if not present
-        if (!location.includes(",")) {
-          // Try to determine country based on city name
-          const cityToCountry: Record<string, string> = {
-            Tokyo: "Japan",
-            Kyoto: "Japan",
-            Osaka: "Japan",
-            London: "UK",
-            Manchester: "UK",
-            Edinburgh: "UK",
-            "New York": "USA",
-            "Los Angeles": "USA",
-            "San Francisco": "USA",
-            Paris: "France",
-            Nice: "France",
-            Rome: "Italy",
-            Venice: "Italy",
-            Florence: "Italy",
-            Barcelona: "Spain",
-            Madrid: "Spain",
-            Berlin: "Germany",
-            Amsterdam: "Netherlands",
-            Sydney: "Australia",
-            Melbourne: "Australia",
-            Bangkok: "Thailand",
-            Bali: "Indonesia",
-          }
-
-          // Check if any key in cityToCountry is included in the location string
-          for (const [city, country] of Object.entries(cityToCountry)) {
-            if (location.includes(city)) {
-              location = `${location}, ${country}`
-              break
-            }
-          }
-        }
-
-        // Generate keywords based on the description
-        const generateKeywords = (desc: string) => {
-          const keywordMap: Record<string, string[]> = {
-            nightlife: ["nightlife", "bars", "clubs", "neon", "night"],
-            food: ["food", "dining", "restaurants", "culinary", "cafes", "eateries"],
-            culture: ["culture", "museums", "history", "art", "galleries", "historic"],
-            nature: ["nature", "outdoors", "hiking", "scenery", "landscape"],
-            beach: ["beach", "coastal", "ocean", "relaxation", "island"],
-            shopping: ["shopping", "markets", "boutiques", "shops", "fashion"],
-            adventure: ["adventure", "activities", "sports", "hiking"],
-            luxury: ["luxury", "upscale", "exclusive", "chic"],
-            hipster: ["hipster", "trendy", "bohemian", "artsy", "indie"],
-            city: ["city", "urban", "skyline", "metropolitan"],
-          }
-
-          const keywords: string[] = []
-          const descLower = desc.toLowerCase()
-          const locationLower = location.toLowerCase()
-
-          // Check for location type keywords
-          if (
-            locationLower.includes("city") ||
-            locationLower.includes("urban") ||
-            locationLower.includes("tokyo") ||
-            locationLower.includes("new york") ||
-            locationLower.includes("london")
-          ) {
-            keywords.push(language === "zh" ? "城市" : "city")
-          } else if (
-            locationLower.includes("beach") ||
-            locationLower.includes("coast") ||
-            locationLower.includes("island")
-          ) {
-            keywords.push(language === "zh" ? "海灘" : "beach")
-          } else if (locationLower.includes("mountain") || locationLower.includes("alps")) {
-            keywords.push(language === "zh" ? "山脈" : "mountains")
-          }
-
-          // Check for activity keywords
-          for (const [key, terms] of Object.entries(keywordMap)) {
-            for (const term of terms) {
-              if (descLower.includes(term) || locationLower.includes(term)) {
-                const translatedKey =
-                  language === "zh"
-                    ? {
-                        nightlife: "夜生活",
-                        food: "美食",
-                        culture: "文化",
-                        nature: "自然",
-                        beach: "海灘",
-                        shopping: "購物",
-                        adventure: "冒險",
-                        luxury: "奢華",
-                        hipster: "時尚",
-                        city: "城市",
-                      }[key] || key
-                    : key
-
-                keywords.push(translatedKey)
-                break
-              }
-            }
-          }
-
-          // Add a default if no keywords found
-          if (keywords.length === 0) {
-            keywords.push(language === "zh" ? "氛圍" : "vibes")
-          }
-
-          // Limit to 3 keywords and remove duplicates
-          return [...new Set(keywords)].slice(0, 3)
-        }
-
-        // Calculate match percentage based on preferences if available
-        let matchPercentage = 95 - index * 3 // Fallback
-
-        if (profile.preferences) {
-          // This is a simplified algorithm - in a real app, you'd have destination data with tags
-          // that could be matched against user preferences
-          const preferences = profile.preferences
-
-          // Different destination types would match different preference profiles
-          // This is a simplified simulation
-          if (index === 0) {
-            // First destination is always a great match
-            matchPercentage = 95
-          } else if (location.toLowerCase().includes("beach") || description.toLowerCase().includes("beach")) {
-            // Beach destinations match relaxation preferences
-            matchPercentage = 90 - index * 2
-          } else if (
-            location.toLowerCase().includes("museum") ||
-            description.toLowerCase().includes("museum") ||
-            location.toLowerCase().includes("cultural") ||
-            description.toLowerCase().includes("cultural")
-          ) {
-            // Cultural destinations match exploration preferences
-            matchPercentage = Math.min(95, preferences.exploration + 10) - index * 2
-          } else if (
-            location.toLowerCase().includes("adventure") ||
-            description.toLowerCase().includes("adventure") ||
-            location.toLowerCase().includes("hiking") ||
-            description.toLowerCase().includes("hiking")
-          ) {
-            // Adventure destinations match spontaneity and activity preferences
-            matchPercentage = Math.min(95, (preferences.spontaneity + preferences.activity) / 2 + 10) - index * 2
-          } else if (
-            location.toLowerCase().includes("luxury") ||
-            description.toLowerCase().includes("luxury") ||
-            location.toLowerCase().includes("resort") ||
-            description.toLowerCase().includes("resort")
-          ) {
-            // Luxury destinations match luxury preferences
-            matchPercentage = Math.min(95, preferences.luxury + 10) - index * 2
-          } else if (
-            location.toLowerCase().includes("photo") ||
-            description.toLowerCase().includes("photo") ||
-            location.toLowerCase().includes("scenic") ||
-            description.toLowerCase().includes("scenic")
-          ) {
-            // Scenic destinations match aesthetics preferences
-            matchPercentage = Math.min(95, preferences.aesthetics + 10) - index * 2
-          } else {
-            // Default match percentage based on position
-            matchPercentage = 95 - index * 3
-          }
-        }
-
-        // Add specific attractions for each destination
-        const getSpecificAttractions = (loc: string) => {
-          const locLower = loc.toLowerCase()
-
-          // Tokyo
-          if (locLower.includes("tokyo") || locLower.includes("japan")) {
-            return language === "zh"
-              ? ["澀谷十字路口拍照點", "築地外市場美食之旅"]
-              : ["Shibuya Crossing photo spots", "Tsukiji Outer Market food tour"]
-          }
-          // Kyoto
-          else if (locLower.includes("kyoto")) {
-            return language === "zh"
-              ? ["伏見稻荷神社徒步", "傳統茶道體驗"]
-              : ["Fushimi Inari Shrine hike", "Traditional tea ceremony"]
-          }
-          // New York
-          else if (locLower.includes("new york") || locLower.includes("nyc")) {
-            return language === "zh"
-              ? ["中央公園自行車租賃", "屋頂酒吧欣賞天際線"]
-              : ["Central Park bike rental", "Rooftop bars with skyline views"]
-          }
-          // London
-          else if (locLower.includes("london")) {
-            return language === "zh"
-              ? ["波羅市場美食攤位", "隱秘的地下酒吧"]
-              : ["Borough Market food stalls", "Secret speakeasy bars"]
-          }
-          // Paris
-          else if (locLower.includes("paris")) {
-            return language === "zh"
-              ? ["瑪黑區隱藏咖啡館", "塞納河日落遊船"]
-              : ["Hidden cafés in Le Marais", "Seine River sunset cruise"]
-          }
-          // Default
-          else {
-            return language === "zh"
-              ? ["當地隱藏寶地", "正宗文化體驗"]
-              : ["Local hidden gems", "Authentic cultural experiences"]
-          }
-        }
-
-        // Get location-specific attractions
-        const locationAttractions = getSpecificAttractions(location)
-
-        // Add this before the return statement
-        const personalReason = getPersonalizedReason(location, description, profile.preferences || {})
-
-        return {
-          location,
-          description:
-            description ||
-            (language === "zh" ? "令人驚嘆的目的地，提供獨特體驗" : "amazing destination with unique experiences"),
-          keywords: generateKeywords(description || location),
-          matchPercentage: Math.round(matchPercentage),
-          attractions: locationAttractions,
-          personalReason, // Add this new field
-        }
-      })
-    }
-
-    // If no destinations in profile, return sample destinations
-    return sampleDestinations
-  }
-
-  // Get the top environment preference
-  const getTopEnvironmentPreference = () => {
-    if (!profile.preferences?.environment) return null
-
-    const envPrefs = profile.preferences.environment
-    const entries = Object.entries(envPrefs) as [string, number][]
-    const sorted = entries.sort((a, b) => b[1] - a[1])
-
-    return {
-      type: sorted[0][0],
-      value: sorted[0][1],
-    }
-  }
-
-  // Get the top activity preference
-  const getTopActivityPreference = () => {
-    if (!profile.preferences?.activities) return null
-
-    const activityPrefs = profile.preferences.activities
-    const entries = Object.entries(activityPrefs) as [string, number][]
-    const sorted = entries.sort((a, b) => b[1] - a[1])
-
-    return {
-      type: sorted[0][0],
-      value: sorted[0][1],
-    }
-  }
-
-  // Add this function after the getTopActivityPreference function to properly display social preferences
-
-  // Get social preferences from the profile
-  const getSocialPreference = () => {
-    if (!profile.preferences?.social) return null
-
-    const socialPrefs = profile.preferences.social
-    const entries = Object.entries(socialPrefs) as [string, number][]
-    const sorted = entries.sort((a, b) => b[1] - a[1])
-
-    if (sorted.length === 0 || sorted[0][1] === 0) return null
-
-    return {
-      type: sorted[0][0],
-      value: sorted[0][1],
-    }
-  }
-
-  // Get social emoji
-  const getSocialEmoji = (type: string) => {
-    const emojis: Record<string, string> = {
-      solo: "🧭",
-      couple: "👫",
-      group: "👥",
-      family: "👨‍👩‍👧‍👦",
-    }
-
-    return emojis[type] || "👤"
-  }
-
-  // Get social preference label
-  const getSocialLabel = (type: string) => {
-    if (language === "zh") {
-      const labels: Record<string, string> = {
-        solo: "獨行俠",
-        couple: "情侶旅行",
-        group: "朋友群組",
-        family: "家庭旅行",
-      }
-      return labels[type] || "獨行俠"
-    }
-
-    const labels: Record<string, string> = {
-      solo: "Solo Traveler",
-      couple: "Travel Duo",
-      group: "Friend Group",
-      family: "Family Travel",
-    }
-    return labels[type] || "Solo Traveler"
-  }
-
-  // Add these new helper functions after the getSocialLabel function
-
-  // Get personalized travel hack based on preferences
-
-  // Get animal based on traveler type
+  // Get travel animal based on traveler type
   const getTravelerAnimal = () => {
     // Use preferences to determine the animal personality
     const prefs = profile.preferences || {}
@@ -1557,6 +1043,334 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
     )
   }
 
+  // Generate destination recommendations with match percentages and descriptions
+  const getDestinationRecommendations = () => {
+    // Define some sample destinations with detailed descriptions
+    const sampleDestinations = [
+      {
+        location: "Shibuya, Tokyo, Japan",
+        description: "where neon lights meet endless culture",
+        keywords: ["city", "nightlife", "shopping"],
+        matchPercentage: 95,
+      },
+      {
+        location: "Shoreditch, London, UK",
+        description: "edgy art scenes and sick cafes",
+        keywords: ["urban", "culture", "food"],
+        matchPercentage: 92,
+      },
+      {
+        location: "Brooklyn, New York City, USA",
+        description: "for those classic skyline views",
+        keywords: ["city", "nightlife", "art"],
+        matchPercentage: 89,
+      },
+    ]
+
+    // Add this new function inside getDestinationRecommendations
+    const getPersonalizedReason = (location: string, description: string, preferences: any) => {
+      const locLower = location.toLowerCase()
+      const descLower = description.toLowerCase()
+      const travelerType = profile.travelerType.toLowerCase()
+
+      // Personalized reasons based on traveler type and preferences
+      if (travelerType.includes("luxury") && (locLower.includes("bali") || locLower.includes("maldives"))) {
+        return "Perfect for your taste in exclusive resorts and premium experiences"
+      }
+
+      if (travelerType.includes("adventure") && (locLower.includes("zealand") || locLower.includes("patagonia"))) {
+        return "Matches your adventure-seeking spirit with world-class outdoor activities"
+      }
+
+      if (travelerType.includes("digital") && (locLower.includes("bali") || locLower.includes("lisbon"))) {
+        return "Ideal for your remote work lifestyle with great wifi and co-working spaces"
+      }
+
+      if (travelerType.includes("cultural") && (locLower.includes("kyoto") || locLower.includes("rome"))) {
+        return "Aligns with your passion for authentic cultural immersion"
+      }
+
+      if (preferences.aesthetics > 70 && (locLower.includes("santorini") || locLower.includes("paris"))) {
+        return "Perfect for your eye for beauty and Instagram-worthy moments"
+      }
+
+      if (preferences.activities?.nightlife > 70 && (locLower.includes("berlin") || locLower.includes("bangkok"))) {
+        return "Matches your love for vibrant nightlife and social scenes"
+      }
+
+      if (preferences.activities?.culinary > 70 && (locLower.includes("tokyo") || locLower.includes("lyon"))) {
+        return "Ideal for your foodie adventures with world-class cuisine"
+      }
+
+      if (preferences.environment?.beach > 70 && (locLower.includes("maldives") || locLower.includes("hawaii"))) {
+        return "Perfect for your beach-loving soul and ocean adventures"
+      }
+
+      if (preferences.environment?.mountains > 70 && (locLower.includes("swiss") || locLower.includes("nepal"))) {
+        return "Matches your mountain-seeking spirit and love for dramatic landscapes"
+      }
+
+      if (preferences.environment?.city > 70 && (locLower.includes("york") || locLower.includes("tokyo"))) {
+        return "Ideal for your urban exploration style and city energy"
+      }
+
+      // Default personalized reason based on traveler type
+      return `Perfectly matches your ${travelerType.replace(/er$/, "")} travel style`
+    }
+
+    // When returning the destinations, include the personalized reason
+    if (profile.destinations && profile.destinations.length > 0) {
+      return profile.destinations
+        .map((destination, index) => {
+          // Extract location and description if possible
+          let location = destination
+          let description = ""
+
+          // Try to split on common patterns
+          if (destination.includes(" - ")) {
+            const parts = destination.split(" - ")
+            location = parts[0]
+            description = parts[1]
+          } else if (destination.includes(" for ")) {
+            const parts = destination.split(" - ")
+            location = parts[0]
+            description = "for " + parts[1]
+          } else if (destination.includes(" (")) {
+            const parts = destination.split(" (")
+            location = parts[0]
+            description = parts[1].replace(")", "")
+          }
+
+          // Add country if not present
+          if (!location.includes(",")) {
+            // Try to determine country based on city name
+            const cityToCountry: Record<string, string> = {
+              Tokyo: "Japan",
+              Kyoto: "Japan",
+              Osaka: "Japan",
+              London: "UK",
+              Manchester: "UK",
+              Edinburgh: "UK",
+              "New York": "USA",
+              "Los Angeles": "USA",
+              "San Francisco": "USA",
+              Paris: "France",
+              Nice: "France",
+              Rome: "Italy",
+              Venice: "Italy",
+              Florence: "Italy",
+              Barcelona: "Spain",
+              Madrid: "Spain",
+              Berlin: "Germany",
+              Amsterdam: "Netherlands",
+              Sydney: "Australia",
+              Melbourne: "Australia",
+              Bangkok: "Thailand",
+              Bali: "Indonesia",
+            }
+
+            // Check if any key in cityToCountry is included in the location string
+            for (const [city, country] of Object.entries(cityToCountry)) {
+              if (location.includes(city)) {
+                location = `${location}, ${country}`
+                break
+              }
+            }
+          }
+
+          // Generate keywords based on the description
+          const generateKeywords = (desc: string) => {
+            const keywordMap: Record<string, string[]> = {
+              nightlife: ["nightlife", "bars", "clubs", "neon", "night"],
+              food: ["food", "dining", "restaurants", "culinary", "cafes", "eateries"],
+              culture: ["culture", "museums", "history", "art", "galleries", "historic"],
+              nature: ["nature", "outdoors", "hiking", "scenery", "landscape"],
+              beach: ["beach", "coastal", "ocean", "relaxation", "island"],
+              shopping: ["shopping", "markets", "boutiques", "shops", "fashion"],
+              adventure: ["adventure", "activities", "sports", "hiking"],
+              luxury: ["luxury", "upscale", "exclusive", "chic"],
+              hipster: ["hipster", "trendy", "bohemian", "artsy", "indie"],
+              city: ["city", "urban", "skyline", "metropolitan"],
+            }
+
+            const keywords: string[] = []
+            const descLower = desc.toLowerCase()
+            const locationLower = location.toLowerCase()
+
+            // Check for location type keywords
+            if (
+              locationLower.includes("city") ||
+              locationLower.includes("urban") ||
+              locationLower.includes("tokyo") ||
+              locationLower.includes("new york") ||
+              locationLower.includes("london")
+            ) {
+              keywords.push(language === "zh" ? "城市" : "city")
+            } else if (
+              locationLower.includes("beach") ||
+              locationLower.includes("coast") ||
+              locationLower.includes("island")
+            ) {
+              keywords.push(language === "zh" ? "海灘" : "beach")
+            } else if (locationLower.includes("mountain") || locationLower.includes("alps")) {
+              keywords.push(language === "zh" ? "山脈" : "mountains")
+            }
+
+            // Check for activity keywords
+            for (const [key, terms] of Object.entries(keywordMap)) {
+              for (const term of terms) {
+                if (descLower.includes(term) || locationLower.includes(term)) {
+                  const translatedKey =
+                    language === "zh"
+                      ? {
+                          nightlife: "夜生活",
+                          food: "美食",
+                          culture: "文化",
+                          nature: "自然",
+                          beach: "海灘",
+                          shopping: "購物",
+                          adventure: "冒險",
+                          luxury: "奢華",
+                          hipster: "時尚",
+                          city: "城市",
+                        }[key] || key
+                      : key
+
+                  keywords.push(translatedKey)
+                  break
+                }
+              }
+            }
+
+            // Add a default if no keywords found
+            if (keywords.length === 0) {
+              keywords.push(language === "zh" ? "氛圍" : "vibes")
+            }
+
+            // Limit to 3 keywords and remove duplicates
+            return [...new Set(keywords)].slice(0, 3)
+          }
+
+          // Calculate match percentage based on preferences if available
+          let matchPercentage = 95 - index * 3 // Fallback
+
+          if (profile.preferences) {
+            // This is a simplified algorithm - in a real app, you'd have destination data with tags
+            // that could be matched against user preferences
+            const preferences = profile.preferences
+
+            // Different destination types would match different preference profiles
+            // This is a simplified simulation
+            if (index === 0) {
+              // First destination is always a great match
+              matchPercentage = 95
+            } else if (location.toLowerCase().includes("beach") || description.toLowerCase().includes("beach")) {
+              // Beach destinations match relaxation preferences
+              matchPercentage = 90 - index * 2
+            } else if (
+              location.toLowerCase().includes("museum") ||
+              description.toLowerCase().includes("museum") ||
+              location.toLowerCase().includes("cultural") ||
+              description.toLowerCase().includes("cultural")
+            ) {
+              // Cultural destinations match exploration preferences
+              matchPercentage = Math.min(95, preferences.exploration + 10) - index * 2
+            } else if (
+              location.toLowerCase().includes("adventure") ||
+              description.toLowerCase().includes("adventure") ||
+              location.toLowerCase().includes("hiking") ||
+              description.toLowerCase().includes("hiking")
+            ) {
+              // Adventure destinations match spontaneity and activity preferences
+              matchPercentage = Math.min(95, (preferences.spontaneity + preferences.activity) / 2 + 10) - index * 2
+            } else if (
+              location.toLowerCase().includes("luxury") ||
+              description.toLowerCase().includes("luxury") ||
+              location.toLowerCase().includes("resort") ||
+              description.toLowerCase().includes("resort")
+            ) {
+              // Luxury destinations match luxury preferences
+              matchPercentage = Math.min(95, preferences.luxury + 10) - index * 2
+            } else if (
+              location.toLowerCase().includes("photo") ||
+              description.toLowerCase().includes("photo") ||
+              location.toLowerCase().includes("scenic") ||
+              description.toLowerCase().includes("scenic")
+            ) {
+              // Scenic destinations match aesthetics preferences
+              matchPercentage = Math.min(95, preferences.aesthetics + 10) - index * 2
+            } else {
+              // Default match percentage based on position
+              matchPercentage = 95 - index * 3
+            }
+          }
+
+          // Add specific attractions for each destination
+          const getSpecificAttractions = (loc: string) => {
+            const locLower = loc.toLowerCase()
+
+            // Tokyo
+            if (locLower.includes("tokyo") || locLower.includes("japan")) {
+              return language === "zh"
+                ? ["澀谷十字路口拍照點", "築地外市場美食之旅"]
+                : ["Shibuya Crossing photo spots", "Tsukiji Outer Market food tour"]
+            }
+            // Kyoto
+            else if (locLower.includes("kyoto")) {
+              return language === "zh"
+                ? ["伏見稻荷神社徒步", "傳統茶道體驗"]
+                : ["Fushimi Inari Shrine hike", "Traditional tea ceremony"]
+            }
+            // New York
+            else if (locLower.includes("new york") || locLower.includes("nyc")) {
+              return language === "zh"
+                ? ["中央公園自行車租賃", "屋頂酒吧欣賞天際線"]
+                : ["Central Park bike rental", "Rooftop bars with skyline views"]
+            }
+            // London
+            else if (locLower.includes("london")) {
+              return language === "zh"
+                ? ["波羅市場美食攤位", "隱秘的地下酒吧"]
+                : ["Borough Market food stalls", "Secret speakeasy bars"]
+            }
+            // Paris
+            else if (locLower.includes("paris")) {
+              return language === "zh"
+                ? ["瑪黑區隱藏咖啡館", "塞納河日落遊船"]
+                : ["Hidden cafés in Le Marais", "Seine River sunset cruise"]
+            }
+            // Default
+            else {
+              return language === "zh"
+                ? ["當地隱藏寶地", "正宗文化體驗"]
+                : ["Local hidden gems", "Authentic cultural experiences"]
+            }
+          }
+
+          // Get location-specific attractions
+          const locationAttractions = getSpecificAttractions(location)
+
+          // Add this before the return statement
+          const personalReason = getPersonalizedReason(location, description, profile.preferences || {})
+
+          return {
+            location,
+            description:
+              description ||
+              (language === "zh" ? "令人驚嘆的目的地，提供獨特體驗" : "amazing destination with unique experiences"),
+            keywords: generateKeywords(description || location),
+            matchPercentage: Math.round(matchPercentage),
+            attractions: locationAttractions,
+            personalReason, // Add this new field
+          }
+        })
+        .slice(0, 3) // Only return top 3 destinations
+    }
+
+    // If no destinations in profile, return sample destinations
+    return sampleDestinations
+  }
+
   // Scroll horizontally when mouse wheel is used on the recommendations container
   const handleWheel = (e: React.WheelEvent) => {
     if (scrollContainerRef.current) {
@@ -1565,70 +1379,11 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
     }
   }
 
-  const preferences = getTravelPreferences()
   const recommendations = getDestinationRecommendations()
-  const topEnvironment = getTopEnvironmentPreference()
-  const topActivity = getTopActivityPreference()
   const personalizedHacks = getPersonalizedTravelHacks(profile, language)
 
   // Get the dynamic background gradient
   const dynamicBackground = getDynamicBackground()
-
-  // Update the handleSocialShare function to track social shares
-  const handleSocialShare = (platform: string) => {
-    analytics.track("result_shared", {
-      method: platform,
-      travelerType: profile.travelerType,
-    })
-
-    let shareUrl = ""
-    const text =
-      language === "zh"
-        ? `我是${profile.travelerType}！🌍 發現我的旅行風格超出我的預期！你也來測試一下，看看你是什麼類型的旅行者：`
-        : `I'm a ${profile.travelerType}! 🌍 My travel style surprised me! Take this 1-min quiz to discover yours:`
-    const url = "https://play.voyagerai.io"
-
-    switch (platform) {
-      case "twitter":
-        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
-        break
-      case "facebook":
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`
-        break
-      case "instagram":
-        // Instagram doesn't support direct sharing via URL, so we'll just open the share modal
-        setShowShareModal(true)
-        return
-    }
-
-    if (shareUrl) {
-      window.open(shareUrl, "_blank", "noopener,noreferrer")
-    }
-  }
-
-  // Helper function to get environment emoji
-  const getEnvironmentEmoji = (type: string) => {
-    const emojis: Record<string, string> = {
-      nature: "🏞️",
-      city: "🏙️",
-      beach: "🏝️",
-      mountains: "⛰️",
-    }
-
-    return emojis[type] || "🌍"
-  }
-
-  // Helper function to get activity emoji
-  const getActivityEmoji = (type: string) => {
-    const emojis: Record<string, string> = {
-      adventure: "🧗‍♀️",
-      relaxation: "🧘",
-      culture: "🏛️",
-      nightlife: "🌃",
-    }
-
-    return emojis[type] || "✈️"
-  }
 
   return (
     <div ref={resultRef}>
@@ -1636,8 +1391,6 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
         <CardContent className="p-0">
           <div className="flex flex-col items-center">
             {/* Dynamic gradient header with decorative elements */}
-            {/* Dynamic gradient header with decorative elements */}
-
             <div className={`relative w-full h-48 sm:h-60 md:h-72 overflow-hidden bg-gradient-to-br ${getTypeColor()}`}>
               {/* Animated background with reduced opacity to show the gradient better */}
               <div className="opacity-70">
@@ -1727,45 +1480,12 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                 </div>
               </ProgressiveLoader>
 
-              {/* Travel Preferences Visualization - IMPROVED SPECTRUM STYLE WITH EMOJIS */}
-              <ProgressiveLoader delay={300}>
+              {/* Travel Personality Insights - Enhanced with more dynamic content */}
+              <ProgressiveLoader delay={200}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="bg-gradient-to-r from-violet-50 to-pink-50 rounded-2xl p-5 mb-6"
-                >
-                  <div className="flex items-center mb-4">
-                    <Palette className="h-5 w-5 mr-2 text-violet-600" />
-                    <h3 className="text-xl font-bold text-violet-800">{t.results.travelStyle}</h3>
-                  </div>
-
-                  <div className="space-y-0">
-                    {preferences.map((pref, index) => (
-                      <TravelStyleMeter
-                        key={index}
-                        leftLabel={pref.leftLabel}
-                        rightLabel={pref.rightLabel}
-                        leftIcon={pref.leftIcon}
-                        rightIcon={pref.rightIcon}
-                        emoji={pref.emoji}
-                        color={pref.color}
-                        value={pref.value}
-                        index={index}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              </ProgressiveLoader>
-
-              {/* After the TravelStyleMeter section and before the Environment & Activity Preferences section, add: */}
-              {/* Add this new section after the Travel Preferences Visualization section and before the Environment & Activity Preferences section */}
-              {/* Travel Personality Insights - Enhanced with more dynamic content */}
-              <ProgressiveLoader delay={400}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
                   className="bg-gradient-to-r from-violet-50 to-pink-50 rounded-2xl p-4 sm:p-5 mb-6"
                 >
                   <div className="flex items-center mb-3 sm:mb-4">
@@ -1833,253 +1553,12 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                 </motion.div>
               </ProgressiveLoader>
 
-              {/* Personality Hashtags - Purple gradient section */}
-              <div className="bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl p-4 sm:p-5 shadow-sm">
-                <h4 className="font-bold text-white text-lg sm:text-xl mb-3 sm:mb-4">
-                  {language === "zh" ? "你的旅行個性標籤" : "Your Travel Personality Tags"}
-                </h4>
-                <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-                  {(() => {
-                    // Generate truly personalized tags based on profile data
-                    const prefs = profile.preferences || {}
-                    const travelerType = profile.travelerType.toLowerCase()
-                    const tags = []
-
-                    // Use profile tags if available
-                    if (profile.tags && profile.tags.length > 0) {
-                      return profile.tags.map((tag, i) => (
-                        <span
-                          key={i}
-                          className="bg-white/20 backdrop-blur-sm text-white px-3 py-2 sm:px-4 sm:py-2.5 rounded-full text-sm sm:text-base font-medium"
-                        >
-                          #{tag.toLowerCase().replace(/\s+/g, "")}
-                        </span>
-                      ))
-                    }
-
-                    // Generate more specific and personality-driven tags
-
-                    // Personality-based tags (more specific and unique)
-                    if (prefs.spontaneity > 70) {
-                      tags.push(language === "zh" ? "計劃殺手" : "planbreaker")
-                    } else if (prefs.spontaneity < 30) {
-                      tags.push(language === "zh" ? "行程控" : "itinerarymaster")
-                    }
-
-                    if (prefs.luxury > 70) {
-                      tags.push(language === "zh" ? "奢華控" : "luxeaddict")
-                    } else if (prefs.luxury < 30) {
-                      tags.push(language === "zh" ? "省錢達人" : "budgethacker")
-                    }
-
-                    if (prefs.activity > 70) {
-                      tags.push(language === "zh" ? "永不停歇" : "alwaysonthego")
-                    } else if (prefs.activity < 30) {
-                      tags.push(language === "zh" ? "慢活達人" : "slowtraveler")
-                    }
-
-                    if (prefs.aesthetics > 70) {
-                      tags.push(language === "zh" ? "拍照狂魔" : "shotseeker")
-                    }
-
-                    if (prefs.exploration > 70) {
-                      tags.push(language === "zh" ? "探索控" : "pathfinder")
-                    } else if (prefs.exploration < 30) {
-                      tags.push(language === "zh" ? "舒適圈愛好者" : "comfortseeker")
-                    }
-
-                    // Environment-specific personality tags
-                    if (prefs.environment?.beach > 70) {
-                      tags.push(language === "zh" ? "海灘靈魂" : "beachsoul")
-                    }
-
-                    if (prefs.environment?.mountains > 70) {
-                      tags.push(language === "zh" ? "山峰征服者" : "peakchaser")
-                    }
-
-                    if (prefs.environment?.city > 70) {
-                      tags.push(language === "zh" ? "都市獵人" : "cityhustler")
-                    }
-
-                    // Activity-specific personality tags
-                    if (prefs.activities?.nightlife > 70) {
-                      tags.push(language === "zh" ? "夜貓子" : "nightowl")
-                    }
-
-                    if (prefs.activities?.adventure > 70) {
-                      tags.push(language === "zh" ? "腎上腺素成癮者" : "adrenalinejunkie")
-                    }
-
-                    if (prefs.activities?.culinary > 70) {
-                      tags.push(language === "zh" ? "味蕾探險家" : "tasteexplorer")
-                    }
-
-                    if (prefs.activities?.cultural > 70) {
-                      tags.push(language === "zh" ? "文化沉浸者" : "cultureimmersive")
-                    }
-
-                    // Social-specific personality tags
-                    if (prefs.social?.solo > 70) {
-                      tags.push(language === "zh" ? "獨行俠" : "solorider")
-                    } else if (prefs.social?.group > 70) {
-                      tags.push(language === "zh" ? "派對動物" : "squadtraveler")
-                    } else if (prefs.social?.couple > 70) {
-                      tags.push(language === "zh" ? "浪漫旅人" : "duoadventurer")
-                    } else if (prefs.social?.family > 70) {
-                      tags.push(language === "zh" ? "家庭總管" : "familycoordinator")
-                    }
-
-                    // Traveler type specific tags
-                    if (travelerType.includes("luxury")) {
-                      tags.push(language === "zh" ? "精緻生活" : "fineliving")
-                    }
-
-                    if (travelerType.includes("adventure") || travelerType.includes("explorer")) {
-                      tags.push(language === "zh" ? "無畏探險" : "fearlessexplorer")
-                    }
-
-                    if (travelerType.includes("digital") || travelerType.includes("nomad")) {
-                      tags.push(language === "zh" ? "數位遊牧" : "remoteworker")
-                    }
-
-                    if (travelerType.includes("aesthetic") || travelerType.includes("insta")) {
-                      tags.push(language === "zh" ? "美學獵人" : "visualcurator")
-                    }
-
-                    // Ensure we have a good number of tags but not too many
-                    const uniqueTags = [...new Set(tags)]
-                    const finalTags = uniqueTags.slice(0, 6) // Limit to 6 tags
-
-                    return finalTags.map((tag, i) => (
-                      <span
-                        key={i}
-                        className="bg-white/20 backdrop-blur-sm text-white px-3 py-2 sm:px-4 sm:py-2.5 rounded-full text-sm sm:text-base font-medium"
-                      >
-                        #{tag.toLowerCase().replace(/\s+/g, "")}
-                      </span>
-                    ))
-                  })()}
-                </div>
-              </div>
-
-              {/* Environment & Activity Preferences */}
-              {(topEnvironment || topActivity) && (
+              {/* Destination Recommendations - TOP 3 ONLY */}
+              <ProgressiveLoader delay={300}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="bg-gradient-to-r from-violet-50 to-pink-50 rounded-2xl p-5 mb-6"
-                >
-                  <div className="flex items-center mb-4">
-                    <Globe className="h-5 w-5 mr-2 text-violet-600" />
-                    <h3 className="text-xl font-bold text-violet-800">{t.results.travelPreferences}</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {topEnvironment && (
-                      <div className="bg-white rounded-xl p-4 shadow-sm">
-                        <div className="flex items-center mb-2">
-                          <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center mr-3">
-                            <span className="text-xl">{getEnvironmentEmoji(topEnvironment.type)}</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">{t.results.topEnvironment}</p>
-                            <h4 className="font-bold text-gray-800 capitalize">{topEnvironment.type}</h4>
-                          </div>
-                        </div>
-                        <div className="mt-2 bg-gray-100 h-2 rounded-full overflow-hidden">
-                          <div
-                            className="bg-emerald-500 h-full rounded-full"
-                            style={{ width: `${topEnvironment.value}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
-
-                    {topActivity && (
-                      <div className="bg-white rounded-xl p-4 shadow-sm">
-                        <div className="flex items-center mb-2">
-                          <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center mr-3">
-                            <span className="text-xl">{getActivityEmoji(topActivity.type)}</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">{t.results.topActivity}</p>
-                            <h4 className="font-bold text-gray-800 capitalize">{topActivity.type}</h4>
-                          </div>
-                        </div>
-                        <div className="mt-2 bg-gray-100 h-2 rounded-full overflow-hidden">
-                          <div
-                            className="bg-violet-500 h-full rounded-full"
-                            style={{ width: `${topActivity.value}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
-
-                    {getSocialPreference() && (
-                      <div className="bg-white rounded-xl p-4 shadow-sm">
-                        <div className="flex items-center mb-2">
-                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                            <span className="text-xl">{getSocialEmoji(getSocialPreference()!.type)}</span>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">
-                              {language === "zh" ? "旅行同伴偏好" : "Travel Companion"}
-                            </p>
-                            <h4 className="font-bold text-gray-800 capitalize">
-                              {getSocialLabel(getSocialPreference()!.type)}
-                            </h4>
-                          </div>
-                        </div>
-                        <div className="mt-2 bg-gray-100 h-2 rounded-full overflow-hidden">
-                          <div
-                            className="bg-blue-500 h-full rounded-full"
-                            style={{ width: `${getSocialPreference()!.value}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Travel Tips - Now fully personalized */}
-              <ProgressiveLoader delay={900}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                  className="bg-gradient-to-br from-violet-50 to-pink-50 rounded-2xl p-5 mb-6"
-                >
-                  <h3 className="text-xl font-bold text-violet-800 mb-4 flex items-center">
-                    <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
-                    {t.results.travelHacksFor.replace("{travelerType}", profile.travelerType)}
-                  </h3>
-                  <ul className="space-y-3">
-                    {personalizedHacks.map((tip, index) => (
-                      <motion.li
-                        key={index}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.8 + index * 0.1 }}
-                        className="flex items-start bg-white p-2 sm:p-3 rounded-xl shadow-sm"
-                      >
-                        <span className="text-lg sm:text-xl mr-2 sm:mr-3 flex-shrink-0 mt-0.5">
-                          {index === 0 ? "💡" : index === 1 ? "✨" : index === 2 ? "🔍" : index === 3 ? "🎯" : "🌟"}
-                        </span>
-                        <span className="text-xs sm:text-sm md:text-base text-gray-700">{tip}</span>
-                      </motion.li>
-                    ))}
-                  </ul>
-                </motion.div>
-              </ProgressiveLoader>
-
-              {/* Destination Recommendations - REDESIGNED CARD DECK */}
-              <ProgressiveLoader delay={500}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
                   className="bg-gradient-to-r from-violet-50 to-pink-50 rounded-2xl p-5 mb-6"
                 >
                   <div className="flex items-center justify-between mb-4">
@@ -2100,7 +1579,7 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                   <div className="relative">
                     {/* Mobile indicator dots */}
                     <div className="flex justify-center gap-1 mb-3 md:hidden">
-                      {recommendations.map((_, i) => (
+                      {recommendations.slice(0, 3).map((_, i) => (
                         <div
                           key={i}
                           className={`w-2 h-2 rounded-full ${i === 0 ? "bg-violet-500" : "bg-violet-200"}`}
@@ -2108,13 +1587,13 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                       ))}
                     </div>
 
-                    {/* Scrollable container */}
+                    {/* Scrollable container - TOP 3 ONLY */}
                     <div
                       ref={scrollContainerRef}
                       className="flex overflow-x-auto pb-4 space-x-4 scrollbar-hide snap-x snap-mandatory"
                       onWheel={handleWheel}
                     >
-                      {recommendations.map((rec, index) => (
+                      {recommendations.slice(0, 3).map((rec, index) => (
                         <DestinationCard
                           key={index}
                           location={rec.location}
@@ -2124,7 +1603,7 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                           travelerType={profile.travelerType}
                           index={index}
                           attractions={rec.attractions}
-                          personalReason={rec.personalReason} // Pass the new personalized reason
+                          personalReason={rec.personalReason}
                         />
                       ))}
                     </div>
@@ -2135,13 +1614,43 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                 </motion.div>
               </ProgressiveLoader>
 
-              {/* Email capture - UPDATED WITHOUT BETA SEATS TEXT */}
+              {/* Travel Tips - Now with fewer tips */}
+              <ProgressiveLoader delay={400}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="bg-gradient-to-br from-violet-50 to-pink-50 rounded-2xl p-5 mb-6"
+                >
+                  <h3 className="text-xl font-bold text-violet-800 mb-4 flex items-center">
+                    <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
+                    {t.results.travelHacksFor.replace("{travelerType}", profile.travelerType)}
+                  </h3>
+                  <ul className="space-y-3">
+                    {personalizedHacks.map((tip, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.6 + index * 0.1 }}
+                        className="flex items-start bg-white p-2 sm:p-3 rounded-xl shadow-sm"
+                      >
+                        <span className="text-lg sm:text-xl mr-2 sm:mr-3 flex-shrink-0 mt-0.5">
+                          {index === 0 ? "💡" : index === 1 ? "✨" : "🔍"}
+                        </span>
+                        <span className="text-xs sm:text-sm md:text-base text-gray-700">{tip}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.div>
+              </ProgressiveLoader>
+
               {/* Email capture - ENHANCED WITH ANIMATIONS */}
               <motion.div
                 className={`bg-gradient-to-r ${getTypeColor()} rounded-2xl p-5 mb-6 text-white relative overflow-hidden`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.6 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -2173,37 +1682,6 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                     delay: 1,
                   }}
                 />
-
-                {/* Floating sparkles */}
-                <motion.div
-                  className="absolute top-1/4 left-1/4 text-2xl"
-                  animate={{
-                    y: [0, -15, 0],
-                    opacity: [0.7, 1, 0.7],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: "reverse",
-                  }}
-                >
-                  ✨
-                </motion.div>
-                <motion.div
-                  className="absolute bottom-1/4 right-1/4 text-2xl"
-                  animate={{
-                    y: [0, -10, 0],
-                    opacity: [0.7, 1, 0.7],
-                  }}
-                  transition={{
-                    duration: 2.5,
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: "reverse",
-                    delay: 0.5,
-                  }}
-                >
-                  🚀
-                </motion.div>
 
                 {/* Success animation overlay */}
                 <AnimatePresence>
@@ -2245,7 +1723,7 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                     className="text-xl font-bold"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.9 }}
+                    transition={{ delay: 0.7 }}
                   >
                     {t.results.getEarlyAccess}
                   </motion.h3>
@@ -2255,7 +1733,7 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                   className="mb-4 text-white/90"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 1 }}
+                  transition={{ delay: 0.8 }}
                 >
                   {t.results.earlyAccessDescription} {getPersonalizedCTA()}.
                 </motion.p>
@@ -2273,7 +1751,7 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                       whileFocus={{ scale: 1.02 }}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 1.1 }}
+                      transition={{ delay: 0.9 }}
                     />
                     <motion.button
                       type="submit"
@@ -2283,7 +1761,7 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                       whileTap={{ scale: 0.95 }}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 1.2 }}
+                      transition={{ delay: 1.0 }}
                     >
                       {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : t.results.subscribeButton}
                     </motion.button>
@@ -2319,7 +1797,7 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
                   </span>
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-r from-violet-400 to-pink-400 transition-opacity"></div>
                 </Button>
-                {/* Add this button in the action buttons section, right after the share button */}
+
                 <Button
                   onClick={handleChallenge}
                   variant="outline"
@@ -2360,7 +1838,6 @@ export default function QuizResults({ profile, onReset }: QuizResultsProps) {
         </CardContent>
       </Card>
       <ShareModal profile={profile} isOpen={showShareModal} onClose={() => setShowShareModal(false)} />
-      {/* Add this at the end of the component, right before the closing tag */}
       <ChallengeModal profile={profile} isOpen={showChallengeModal} onClose={() => setShowChallengeModal(false)} />
     </div>
   )
