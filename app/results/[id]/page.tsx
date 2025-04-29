@@ -254,33 +254,34 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
           </div>
 
           <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
-            {profileData.traits.map((trait, index) => {
-              // Dynamic icons based on trait keywords
-              let icon = <Sparkles className="h-3 w-3" />
+            {profileData.traits &&
+              profileData.traits.map((trait, index) => {
+                // Dynamic icons based on trait keywords
+                let icon = <Sparkles className="h-3 w-3" />
 
-              if (trait.toLowerCase().includes("adventure")) icon = <Zap className="h-3 w-3" />
-              else if (trait.toLowerCase().includes("culture") || trait.toLowerCase().includes("history"))
-                icon = <Globe className="h-3 w-3" />
-              else if (trait.toLowerCase().includes("food") || trait.toLowerCase().includes("cuisine"))
-                icon = <Utensils className="h-3 w-3" />
-              else if (trait.toLowerCase().includes("photo")) icon = <Camera className="h-3 w-3" />
-              else if (trait.toLowerCase().includes("luxury") || trait.toLowerCase().includes("comfort"))
-                icon = <Star className="h-3 w-3" />
-              else if (trait.toLowerCase().includes("social") || trait.toLowerCase().includes("friend"))
-                icon = <Users className="h-3 w-3" />
-              else if (trait.toLowerCase().includes("plan")) icon = <Map className="h-3 w-3" />
-              else if (trait.toLowerCase().includes("relax")) icon = <Coffee className="h-3 w-3" />
+                if (trait.toLowerCase().includes("adventure")) icon = <Zap className="h-3 w-3" />
+                else if (trait.toLowerCase().includes("culture") || trait.toLowerCase().includes("history"))
+                  icon = <Globe className="h-3 w-3" />
+                else if (trait.toLowerCase().includes("food") || trait.toLowerCase().includes("cuisine"))
+                  icon = <Utensils className="h-3 w-3" />
+                else if (trait.toLowerCase().includes("photo")) icon = <Camera className="h-3 w-3" />
+                else if (trait.toLowerCase().includes("luxury") || trait.toLowerCase().includes("comfort"))
+                  icon = <Star className="h-3 w-3" />
+                else if (trait.toLowerCase().includes("social") || trait.toLowerCase().includes("friend"))
+                  icon = <Users className="h-3 w-3" />
+                else if (trait.toLowerCase().includes("plan")) icon = <Map className="h-3 w-3" />
+                else if (trait.toLowerCase().includes("relax")) icon = <Coffee className="h-3 w-3" />
 
-              return (
-                <span
-                  key={index}
-                  className="bg-voyabear-light text-voyabear-primary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm border border-voyabear-primary/10 flex items-center hover:scale-105 transition-transform"
-                >
-                  <span className="mr-1.5">{icon}</span>
-                  {trait}
-                </span>
-              )
-            })}
+                return (
+                  <span
+                    key={index}
+                    className="bg-voyabear-light text-voyabear-primary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium shadow-sm border border-voyabear-primary/10 flex items-center hover:scale-105 transition-transform"
+                  >
+                    <span className="mr-1.5">{icon}</span>
+                    {trait}
+                  </span>
+                )
+              })}
           </div>
 
           <Separator className="my-4 sm:my-6 bg-gradient-to-r from-transparent via-voyabear-primary/20 to-transparent" />
@@ -293,7 +294,8 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
               </h3>
               <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 hover:shadow-md transition-shadow">
                 <p className="text-gray-700 text-sm sm:text-base">
-                  <span className="font-semibold">{profileData.animal.name}:</span> {profileData.animal.reason}
+                  <span className="font-semibold">{profileData.animal && profileData.animal.name}:</span>{" "}
+                  {profileData.animal && profileData.animal.reason}
                 </p>
               </Card>
             </div>
@@ -360,7 +362,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                 {t.mbtiSection.overviewTitle}
               </h3>
               <p className="text-gray-700 whitespace-pre-line text-sm sm:text-base">
-                {profileData.mbtiAnalysis.overview}
+                {profileData.mbtiAnalysis && profileData.mbtiAnalysis.overview}
               </p>
             </div>
 
@@ -372,14 +374,16 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                 </h3>
                 <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 hover:shadow-md transition-shadow">
                   <ul className="space-y-2 sm:space-y-3">
-                    {profileData.mbtiAnalysis.strengths.map((strength, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="inline-flex items-center justify-center h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-gradient-to-r from-green-500 to-teal-500 text-white mr-2 mt-0.5 flex-shrink-0 shadow-sm">
-                          <Check className="h-2 w-2 sm:h-3 sm:w-3" />
-                        </span>
-                        <span className="text-gray-700 text-sm sm:text-base">{strength}</span>
-                      </li>
-                    ))}
+                    {profileData.mbtiAnalysis &&
+                      profileData.mbtiAnalysis.strengths &&
+                      profileData.mbtiAnalysis.strengths.map((strength, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="inline-flex items-center justify-center h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-gradient-to-r from-green-500 to-teal-500 text-white mr-2 mt-0.5 flex-shrink-0 shadow-sm">
+                            <Check className="h-2 w-2 sm:h-3 sm:w-3" />
+                          </span>
+                          <span className="text-gray-700 text-sm sm:text-base">{strength}</span>
+                        </li>
+                      ))}
                   </ul>
                 </Card>
               </div>
@@ -391,14 +395,16 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                 </h3>
                 <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 hover:shadow-md transition-shadow">
                   <ul className="space-y-2 sm:space-y-3">
-                    {profileData.mbtiAnalysis.challenges.map((challenge, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="inline-flex items-center justify-center h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-white mr-2 mt-0.5 flex-shrink-0 shadow-sm">
-                          <AlertTriangle className="h-2 w-2 sm:h-3 sm:w-3" />
-                        </span>
-                        <span className="text-gray-700 text-sm sm:text-base">{challenge}</span>
-                      </li>
-                    ))}
+                    {profileData.mbtiAnalysis &&
+                      profileData.mbtiAnalysis.challenges &&
+                      profileData.mbtiAnalysis.challenges.map((challenge, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="inline-flex items-center justify-center h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-white mr-2 mt-0.5 flex-shrink-0 shadow-sm">
+                            <AlertTriangle className="h-2 w-2 sm:h-3 sm:w-3" />
+                          </span>
+                          <span className="text-gray-700 text-sm sm:text-base">{challenge}</span>
+                        </li>
+                      ))}
                   </ul>
                 </Card>
               </div>
@@ -413,17 +419,19 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                 <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 h-full hover:shadow-md transition-shadow">
                   {/* Improved bullet points with better styling */}
                   <ul className="space-y-2 sm:space-y-3 pl-0">
-                    {profileData.mbtiAnalysis.travelStyle
-                      .split(". ")
-                      .filter((sentence) => sentence.trim().length > 0)
-                      .map((sentence, i) => (
-                        <li key={i} className="flex items-start">
-                          <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-voyabear-secondary/20 text-voyabear-secondary mr-2 mt-0.5 flex-shrink-0">
-                            <Check className="h-3 w-3" />
-                          </span>
-                          <span>{sentence.trim().replace(/\.$/, "")}</span>
-                        </li>
-                      ))}
+                    {profileData.mbtiAnalysis &&
+                      profileData.mbtiAnalysis.travelStyle &&
+                      profileData.mbtiAnalysis.travelStyle
+                        .split(". ")
+                        .filter((sentence) => sentence.trim().length > 0)
+                        .map((sentence, i) => (
+                          <li key={i} className="flex items-start">
+                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-voyabear-secondary/20 text-voyabear-secondary mr-2 mt-0.5 flex-shrink-0">
+                              <Check className="h-3 w-3" />
+                            </span>
+                            <span>{sentence.trim().replace(/\.$/, "")}</span>
+                          </li>
+                        ))}
                   </ul>
                 </Card>
               </div>
@@ -436,17 +444,19 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                 <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 h-full hover:shadow-md transition-shadow">
                   {/* Improved bullet points with better styling */}
                   <ul className="space-y-2 sm:space-y-3 pl-0">
-                    {profileData.mbtiAnalysis.idealCompanions
-                      .split(". ")
-                      .filter((sentence) => sentence.trim().length > 0)
-                      .map((sentence, i) => (
-                        <li key={i} className="flex items-start">
-                          <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-voyabear-primary/20 text-voyabear-primary mr-2 mt-0.5 flex-shrink-0">
-                            <Users className="h-3 w-3" />
-                          </span>
-                          <span>{sentence.trim().replace(/\.$/, "")}</span>
-                        </li>
-                      ))}
+                    {profileData.mbtiAnalysis &&
+                      profileData.mbtiAnalysis.idealCompanions &&
+                      profileData.mbtiAnalysis.idealCompanions
+                        .split(". ")
+                        .filter((sentence) => sentence.trim().length > 0)
+                        .map((sentence, i) => (
+                          <li key={i} className="flex items-start">
+                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-voyabear-primary/20 text-voyabear-primary mr-2 mt-0.5 flex-shrink-0">
+                              <Users className="h-3 w-3" />
+                            </span>
+                            <span>{sentence.trim().replace(/\.$/, "")}</span>
+                          </li>
+                        ))}
                   </ul>
                 </Card>
               </div>
@@ -459,17 +469,19 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                 <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 h-full hover:shadow-md transition-shadow">
                   {/* Improved bullet points with better styling */}
                   <ul className="space-y-2 sm:space-y-3 pl-0">
-                    {profileData.mbtiAnalysis.growthAreas
-                      .split(". ")
-                      .filter((sentence) => sentence.trim().length > 0)
-                      .map((sentence, i) => (
-                        <li key={i} className="flex items-start">
-                          <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-voyabear-tertiary/20 text-voyabear-tertiary mr-2 mt-0.5 flex-shrink-0">
-                            <Lightbulb className="h-3 w-3" />
-                          </span>
-                          <span>{sentence.trim().replace(/\.$/, "")}</span>
-                        </li>
-                      ))}
+                    {profileData.mbtiAnalysis &&
+                      profileData.mbtiAnalysis.growthAreas &&
+                      profileData.mbtiAnalysis.growthAreas
+                        .split(". ")
+                        .filter((sentence) => sentence.trim().length > 0)
+                        .map((sentence, i) => (
+                          <li key={i} className="flex items-start">
+                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-voyabear-tertiary/20 text-voyabear-tertiary mr-2 mt-0.5 flex-shrink-0">
+                              <Lightbulb className="h-3 w-3" />
+                            </span>
+                            <span>{sentence.trim().replace(/\.$/, "")}</span>
+                          </li>
+                        ))}
                   </ul>
                 </Card>
               </div>
@@ -495,39 +507,40 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
 
           {/* Improved grid layout for destinations */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {profileData.recommendedCities.map((city, index) => {
-              const cityIcon = getCityIcon(city)
-              const imageUrl = getImageUrl(index)
+            {profileData.recommendedCities &&
+              profileData.recommendedCities.map((city, index) => {
+                const cityIcon = getCityIcon(city)
+                const imageUrl = getImageUrl(index)
 
-              return (
-                <Card key={index} className="overflow-hidden border-0 shadow-md card-hover h-full">
-                  <div className="h-32 sm:h-40 bg-gray-200 relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
-                    <div className="absolute inset-0 bg-voyabear-light/50">
-                      <Image
-                        src={imageUrl || "/placeholder.svg"}
-                        alt={`${city.name}, ${city.country}`}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover"
-                        unoptimized={!cityImages[index]?.url}
-                        priority={index < 3} // Prioritize loading the first 3 images
-                      />
+                return (
+                  <Card key={index} className="overflow-hidden border-0 shadow-md card-hover h-full">
+                    <div className="h-32 sm:h-40 bg-gray-200 relative">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
+                      <div className="absolute inset-0 bg-voyabear-light/50">
+                        <Image
+                          src={imageUrl || "/placeholder.svg"}
+                          alt={`${city.name}, ${city.country}`}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover"
+                          unoptimized={!cityImages[index]?.url}
+                          priority={index < 3} // Prioritize loading the first 3 images
+                        />
+                      </div>
+                      <div className="absolute bottom-0 left-0 p-3 z-20">
+                        <h3 className="font-medium text-white text-base sm:text-lg mb-0.5 flex items-center">
+                          {cityIcon}
+                          {city.name}
+                        </h3>
+                        <p className="text-white/90 text-xs">{city.country}</p>
+                      </div>
                     </div>
-                    <div className="absolute bottom-0 left-0 p-3 z-20">
-                      <h3 className="font-medium text-white text-base sm:text-lg mb-0.5 flex items-center">
-                        {cityIcon}
-                        {city.name}
-                      </h3>
-                      <p className="text-white/90 text-xs">{city.country}</p>
+                    <div className="p-3 sm:p-4">
+                      <p className="text-gray-600 text-sm">{city.reason}</p>
                     </div>
-                  </div>
-                  <div className="p-3 sm:p-4">
-                    <p className="text-gray-600 text-sm">{city.reason}</p>
-                  </div>
-                </Card>
-              )
-            })}
+                  </Card>
+                )
+              })}
           </div>
 
           <div className="text-xs text-gray-500 text-center mt-4 sm:mt-6">

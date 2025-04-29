@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Loader2, BarChart, TrendingDown, Users, Share2, Mail } from "lucide-react"
 
+// Define the analytics data structure
 interface AnalyticsData {
   counters: {
     quizStarted: number
@@ -25,7 +26,7 @@ interface AnalyticsData {
     emailResultsConversionRate: number
     overallConversionRate: number
   }
-  dropoffRates: Record<number, number>
+  dropoffRates: Record<string, number>
   shareMethodDistribution: Record<string, number>
   emailSourceDistribution: Record<string, number>
 }
@@ -78,129 +79,97 @@ export default function AnalyticsDashboard() {
     )
   }
 
-  // Format percentage with 1 decimal place
-  const formatPercent = (value: number) => {
+  // Helper functions to safely access data
+  const formatPercent = (value) => {
     return `${value.toFixed(1)}%`
   }
 
-  // Get color based on conversion rate
-  const getConversionColor = (rate: number) => {
+  const getConversionColor = (rate) => {
     if (rate >= 70) return "text-green-500"
     if (rate >= 40) return "text-yellow-500"
     return "text-red-500"
   }
 
   // Safe getters for data
-  const getQuizStarted = () => data?.counters?.quizStarted || 0
-  const getQuizCompleted = () => data?.counters?.quizCompleted || 0
-  const getProfileViewed = () => data?.counters?.profileViewed || 0
-  const getProfileShared = () => data?.counters?.profileShared || 0
-  const getEmailSubmitted = () => data?.counters?.emailSubmitted || 0
+  const quizStarted = data.counters?.quizStarted || 0
+  const quizCompleted = data.counters?.quizCompleted || 0
+  const profileViewed = data.counters?.profileViewed || 0
+  const profileShared = data.counters?.profileShared || 0
+  const emailSubmitted = data.counters?.emailSubmitted || 0
 
-  const getCompletionRate = () => data?.conversionRates?.completionRate || 0
-  const getShareRate = () => data?.conversionRates?.shareRate || 0
-  const getEmailConversionRate = () => data?.conversionRates?.emailConversionRate || 0
-  const getEmailPopupConversionRate = () => data?.conversionRates?.emailPopupConversionRate || 0
-  const getEmailResultsConversionRate = () => data?.conversionRates?.emailResultsConversionRate || 0
-  const getOverallConversionRate = () => data?.conversionRates?.overallConversionRate || 0
+  const completionRate = data.conversionRates?.completionRate || 0
+  const shareRate = data.conversionRates?.shareRate || 0
+  const emailConversionRate = data.conversionRates?.emailConversionRate || 0
+  const emailPopupConversionRate = data.conversionRates?.emailPopupConversionRate || 0
+  const emailResultsConversionRate = data.conversionRates?.emailResultsConversionRate || 0
+  const overallConversionRate = data.conversionRates?.overallConversionRate || 0
 
-  const getPopupEmailCount = () => data?.counters?.emailSubmittedBySource?.popup || 0
-  const getResultsPageEmailCount = () => data?.counters?.emailSubmittedBySource?.resultsPage || 0
+  const popupEmailCount = data.counters?.emailSubmittedBySource?.popup || 0
+  const resultsPageEmailCount = data.counters?.emailSubmittedBySource?.resultsPage || 0
 
   // Calculate percentages
-  const getPopupEmailPercentage = () => {
-    const completed = getQuizCompleted()
-    if (completed === 0) return 0
-    return (getPopupEmailCount() / completed) * 100
-  }
-
-  const getResultsPageEmailPercentage = () => {
-    const viewed = getProfileViewed()
-    if (viewed === 0) return 0
-    return (getResultsPageEmailCount() / viewed) * 100
-  }
-
-  const getProfileViewedPercentage = () => {
-    const started = getQuizStarted()
-    if (started === 0) return 0
-    return (getProfileViewed() / started) * 100
-  }
-
-  const getProfileSharedPercentage = () => {
-    const started = getQuizStarted()
-    if (started === 0) return 0
-    return (getProfileShared() / started) * 100
-  }
-
-  const getCompletionPercentage = () => {
-    const started = getQuizStarted()
-    if (started === 0) return 0
-    return (getQuizCompleted() / started) * 100
-  }
+  const popupEmailPercentage = quizCompleted === 0 ? 0 : (popupEmailCount / quizCompleted) * 100
+  const resultsPageEmailPercentage = profileViewed === 0 ? 0 : (resultsPageEmailCount / profileViewed) * 100
+  const profileViewedPercentage = quizStarted === 0 ? 0 : (profileViewed / quizStarted) * 100
+  const profileSharedPercentage = quizStarted === 0 ? 0 : (profileShared / quizStarted) * 100
+  const completionPercentage = quizStarted === 0 ? 0 : (quizCompleted / quizStarted) * 100
 
   // Analyze the funnel and identify issues
-  const analyzeFunnel = () => {
-    const issues = []
+  const issues = []
 
-    // Check quiz completion rate
-    const completionRate = getCompletionRate()
-    if (completionRate < 50) {
-      issues.push({
-        area: "Quiz Completion",
-        issue: "Low quiz completion rate",
-        suggestion: "Consider shortening the quiz or making questions more engaging",
-      })
-    }
-
-    // Check for specific question drop-offs
-    if (data.dropoffRates) {
-      const highDropoffQuestions = Object.entries(data.dropoffRates)
-        .filter(([_, rate]) => rate > 20)
-        .map(([q]) => Number.parseInt(q))
-
-      if (highDropoffQuestions.length > 0) {
-        issues.push({
-          area: "Question Drop-off",
-          issue: `High drop-off at question(s) ${highDropoffQuestions.map((q) => q + 1).join(", ")}`,
-          suggestion: "Review these questions for clarity and engagement",
-        })
-      }
-    }
-
-    // Check sharing rate
-    const shareRate = getShareRate()
-    if (shareRate < 15) {
-      issues.push({
-        area: "Result Sharing",
-        issue: "Low share rate",
-        suggestion: "Make results more shareable or add incentives for sharing",
-      })
-    }
-
-    // Check email conversion
-    const emailConversionRate = getEmailConversionRate()
-    if (emailConversionRate < 10) {
-      issues.push({
-        area: "Email Collection",
-        issue: "Low email submission rate",
-        suggestion: "Improve the value proposition for joining the mailing list",
-      })
-    }
-
-    // Check popup email conversion
-    const emailPopupConversionRate = getEmailPopupConversionRate()
-    if (emailPopupConversionRate < 20) {
-      issues.push({
-        area: "Popup Email Collection",
-        issue: "Low popup email submission rate",
-        suggestion: "Improve the popup design or messaging to increase conversions",
-      })
-    }
-
-    return issues
+  // Check quiz completion rate
+  if (completionRate < 50) {
+    issues.push({
+      area: "Quiz Completion",
+      issue: "Low quiz completion rate",
+      suggestion: "Consider shortening the quiz or making questions more engaging",
+    })
   }
 
-  const issues = analyzeFunnel()
+  // Check for specific question drop-offs
+  if (data.dropoffRates) {
+    const highDropoffQuestions = []
+    Object.entries(data.dropoffRates).forEach(([q, rate]) => {
+      if (rate > 20) {
+        highDropoffQuestions.push(Number.parseInt(q))
+      }
+    })
+
+    if (highDropoffQuestions.length > 0) {
+      issues.push({
+        area: "Question Drop-off",
+        issue: `High drop-off at question(s) ${highDropoffQuestions.map((q) => q + 1).join(", ")}`,
+        suggestion: "Review these questions for clarity and engagement",
+      })
+    }
+  }
+
+  // Check sharing rate
+  if (shareRate < 15) {
+    issues.push({
+      area: "Result Sharing",
+      issue: "Low share rate",
+      suggestion: "Make results more shareable or add incentives for sharing",
+    })
+  }
+
+  // Check email conversion
+  if (emailConversionRate < 10) {
+    issues.push({
+      area: "Email Collection",
+      issue: "Low email submission rate",
+      suggestion: "Improve the value proposition for joining the mailing list",
+    })
+  }
+
+  // Check popup email conversion
+  if (emailPopupConversionRate < 20) {
+    issues.push({
+      area: "Popup Email Collection",
+      issue: "Low popup email submission rate",
+      suggestion: "Improve the popup design or messaging to increase conversions",
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -220,7 +189,7 @@ export default function AnalyticsDashboard() {
                 <Users className="h-5 w-5 text-voyabear-primary" />
                 <h3 className="font-medium">Quiz Started</h3>
               </div>
-              <p className="text-3xl font-bold">{getQuizStarted()}</p>
+              <p className="text-3xl font-bold">{quizStarted}</p>
             </Card>
 
             <Card className="p-4 bg-white shadow-sm border-0">
@@ -228,10 +197,8 @@ export default function AnalyticsDashboard() {
                 <BarChart className="h-5 w-5 text-voyabear-secondary" />
                 <h3 className="font-medium">Quiz Completed</h3>
               </div>
-              <p className="text-3xl font-bold">{getQuizCompleted()}</p>
-              <p className={`text-sm ${getConversionColor(getCompletionRate())}`}>
-                {formatPercent(getCompletionRate())} completion rate
-              </p>
+              <p className="text-3xl font-bold">{quizCompleted}</p>
+              <p className={getConversionColor(completionRate)}>{formatPercent(completionRate)} completion rate</p>
             </Card>
 
             <Card className="p-4 bg-white shadow-sm border-0">
@@ -239,10 +206,8 @@ export default function AnalyticsDashboard() {
                 <Share2 className="h-5 w-5 text-voyabear-accent" />
                 <h3 className="font-medium">Profiles Shared</h3>
               </div>
-              <p className="text-3xl font-bold">{getProfileShared()}</p>
-              <p className={`text-sm ${getConversionColor(getShareRate())}`}>
-                {formatPercent(getShareRate())} share rate
-              </p>
+              <p className="text-3xl font-bold">{profileShared}</p>
+              <p className={getConversionColor(shareRate)}>{formatPercent(shareRate)} share rate</p>
             </Card>
 
             <Card className="p-4 bg-white shadow-sm border-0">
@@ -250,10 +215,8 @@ export default function AnalyticsDashboard() {
                 <Mail className="h-5 w-5 text-voyabear-tertiary" />
                 <h3 className="font-medium">Email Signups</h3>
               </div>
-              <p className="text-3xl font-bold">{getEmailSubmitted()}</p>
-              <p className={`text-sm ${getConversionColor(getEmailConversionRate())}`}>
-                {formatPercent(getEmailConversionRate())} conversion
-              </p>
+              <p className="text-3xl font-bold">{emailSubmitted}</p>
+              <p className={getConversionColor(emailConversionRate)}>{formatPercent(emailConversionRate)} conversion</p>
             </Card>
           </div>
 
@@ -263,12 +226,10 @@ export default function AnalyticsDashboard() {
               <div className="w-full bg-gray-200 rounded-full h-4">
                 <div
                   className="bg-gradient-voyabear h-4 rounded-full"
-                  style={{ width: `${Math.min(getOverallConversionRate(), 100)}%` }}
+                  style={{ width: `${Math.min(overallConversionRate, 100)}%` }}
                 ></div>
               </div>
-              <span className={`font-medium ${getConversionColor(getOverallConversionRate())}`}>
-                {formatPercent(getOverallConversionRate())}
-              </span>
+              <span className={getConversionColor(overallConversionRate)}>{formatPercent(overallConversionRate)}</span>
             </div>
             <p className="text-sm text-gray-500 mt-2">Quiz start to email signup conversion rate</p>
           </Card>
@@ -286,7 +247,7 @@ export default function AnalyticsDashboard() {
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-semibold inline-block text-voyabear-primary">{getQuizStarted()}</span>
+                    <span className="text-xs font-semibold inline-block text-voyabear-primary">{quizStarted}</span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
@@ -303,14 +264,14 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-primary">
-                      {getQuizCompleted()} ({formatPercent(getCompletionRate())})
+                      {quizCompleted} ({formatPercent(completionRate)})
                     </span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-voyabear-primary h-3 rounded-full"
-                    style={{ width: `${getCompletionPercentage()}%` }}
+                    style={{ width: `${completionPercentage}%` }}
                   ></div>
                 </div>
               </div>
@@ -324,14 +285,14 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
-                      {getPopupEmailCount()} ({formatPercent(getEmailPopupConversionRate())})
+                      {popupEmailCount} ({formatPercent(emailPopupConversionRate)})
                     </span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-voyabear-tertiary h-3 rounded-full"
-                    style={{ width: `${getPopupEmailPercentage()}%` }}
+                    style={{ width: `${popupEmailPercentage}%` }}
                   ></div>
                 </div>
               </div>
@@ -345,14 +306,14 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-primary">
-                      {getProfileViewed()} ({formatPercent(getProfileViewedPercentage())})
+                      {profileViewed} ({formatPercent(profileViewedPercentage)})
                     </span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-voyabear-primary h-3 rounded-full"
-                    style={{ width: `${getProfileViewedPercentage()}%` }}
+                    style={{ width: `${profileViewedPercentage}%` }}
                   ></div>
                 </div>
               </div>
@@ -366,14 +327,14 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-primary">
-                      {getProfileShared()} ({formatPercent(getShareRate())})
+                      {profileShared} ({formatPercent(shareRate)})
                     </span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-voyabear-primary h-3 rounded-full"
-                    style={{ width: `${getProfileSharedPercentage()}%` }}
+                    style={{ width: `${profileSharedPercentage}%` }}
                   ></div>
                 </div>
               </div>
@@ -387,14 +348,14 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
-                      {getResultsPageEmailCount()} ({formatPercent(getEmailResultsConversionRate())})
+                      {resultsPageEmailCount} ({formatPercent(emailResultsConversionRate)})
                     </span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-voyabear-tertiary h-3 rounded-full"
-                    style={{ width: `${getResultsPageEmailPercentage()}%` }}
+                    style={{ width: `${resultsPageEmailPercentage}%` }}
                   ></div>
                 </div>
               </div>
@@ -406,38 +367,39 @@ export default function AnalyticsDashboard() {
           <Card className="p-6 bg-white shadow-sm border-0">
             <h3 className="text-lg font-medium mb-4">Question Drop-off Analysis</h3>
             <div className="space-y-4">
-              {Object.entries(data.dropoffRates || {}).map(([questionIndex, rate]) => {
-                const questionNumber = Number.parseInt(questionIndex) + 1
-                const isHighDropoff = rate > 20
-                const dropoffColor = isHighDropoff ? "bg-red-500" : "bg-amber-500"
-                const textColor = isHighDropoff ? "text-red-500" : "text-gray-600"
+              {data.dropoffRates &&
+                Object.entries(data.dropoffRates).map(([questionIndex, rate]) => {
+                  const questionNumber = Number.parseInt(questionIndex) + 1
+                  const isHighDropoff = rate > 20
+                  const dropoffColor = isHighDropoff ? "bg-red-500" : "bg-amber-500"
+                  const textColor = isHighDropoff ? "text-red-500" : "text-gray-600"
 
-                return (
-                  <div key={questionIndex} className="relative pt-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-primary">
-                          Question {questionNumber}
-                        </span>
+                  return (
+                    <div key={questionIndex} className="relative pt-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-primary">
+                            Question {questionNumber}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className={`text-xs font-semibold inline-block ${textColor}`}>
+                            {formatPercent(rate)} drop-off
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className={`text-xs font-semibold inline-block ${textColor}`}>
-                          {formatPercent(rate)} drop-off
-                        </span>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className={dropoffColor + " h-3 rounded-full"} style={{ width: `${rate}%` }}></div>
                       </div>
+                      {isHighDropoff && (
+                        <p className="text-xs text-red-500 mt-1">
+                          <TrendingDown className="h-3 w-3 inline mr-1" />
+                          High drop-off detected! Consider reviewing this question.
+                        </p>
+                      )}
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div className={`${dropoffColor} h-3 rounded-full`} style={{ width: `${rate}%` }}></div>
-                    </div>
-                    {isHighDropoff && (
-                      <p className="text-xs text-red-500 mt-1">
-                        <TrendingDown className="h-3 w-3 inline mr-1" />
-                        High drop-off detected! Consider reviewing this question.
-                      </p>
-                    )}
-                  </div>
-                )
-              })}
+                  )
+                })}
             </div>
           </Card>
         </TabsContent>
@@ -446,29 +408,33 @@ export default function AnalyticsDashboard() {
           <Card className="p-6 bg-white shadow-sm border-0">
             <h3 className="text-lg font-medium mb-4">Share Method Distribution</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(data.shareMethodDistribution || {}).map(([method, percentage]) => {
-                const methodName = method.charAt(0).toUpperCase() + method.slice(1)
+              {data.shareMethodDistribution &&
+                Object.entries(data.shareMethodDistribution).map(([method, percentage]) => {
+                  const methodName = method.charAt(0).toUpperCase() + method.slice(1)
 
-                return (
-                  <div key={method} className="relative pt-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-primary">
-                          {methodName}
-                        </span>
+                  return (
+                    <div key={method} className="relative pt-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-primary">
+                            {methodName}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-semibold inline-block text-voyabear-primary">
+                            {formatPercent(percentage)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className="text-xs font-semibold inline-block text-voyabear-primary">
-                          {formatPercent(percentage)}
-                        </span>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div
+                          className="bg-voyabear-secondary h-3 rounded-full"
+                          style={{ width: `${percentage}%` }}
+                        ></div>
                       </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div className="bg-voyabear-secondary h-3 rounded-full" style={{ width: `${percentage}%` }}></div>
-                    </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
             </div>
           </Card>
         </TabsContent>
@@ -477,39 +443,43 @@ export default function AnalyticsDashboard() {
           <Card className="p-6 bg-white shadow-sm border-0">
             <h3 className="text-lg font-medium mb-4">Email Signup Sources</h3>
             <div className="grid grid-cols-1 gap-4">
-              {Object.entries(data.emailSourceDistribution || {}).map(([source, percentage]) => {
-                // Format the source name for display
-                let sourceName = source.charAt(0).toUpperCase() + source.slice(1)
-                let count = 0
+              {data.emailSourceDistribution &&
+                Object.entries(data.emailSourceDistribution).map(([source, percentage]) => {
+                  // Format the source name for display
+                  let sourceName = source.charAt(0).toUpperCase() + source.slice(1)
+                  let count = 0
 
-                if (source === "loading_modal") {
-                  sourceName = "Popup Modal"
-                  count = getPopupEmailCount()
-                } else if (source === "results_page") {
-                  sourceName = "Results Page"
-                  count = getResultsPageEmailCount()
-                }
+                  if (source === "loading_modal") {
+                    sourceName = "Popup Modal"
+                    count = popupEmailCount
+                  } else if (source === "results_page") {
+                    sourceName = "Results Page"
+                    count = resultsPageEmailCount
+                  }
 
-                return (
-                  <div key={source} className="relative pt-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-tertiary">
-                          {sourceName}
-                        </span>
+                  return (
+                    <div key={source} className="relative pt-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-tertiary">
+                            {sourceName}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
+                            {count} ({formatPercent(percentage)})
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
-                          {count} ({formatPercent(percentage)})
-                        </span>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div
+                          className="bg-voyabear-tertiary h-3 rounded-full"
+                          style={{ width: `${percentage}%` }}
+                        ></div>
                       </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div className="bg-voyabear-tertiary h-3 rounded-full" style={{ width: `${percentage}%` }}></div>
-                    </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
             </div>
 
             <div className="mt-6">
@@ -524,16 +494,16 @@ export default function AnalyticsDashboard() {
                     </div>
                     <div className="text-right">
                       <span
-                        className={`text-xs font-semibold inline-block ${getConversionColor(getEmailPopupConversionRate())}`}
+                        className={`text-xs font-semibold inline-block ${getConversionColor(emailPopupConversionRate)}`}
                       >
-                        {formatPercent(getEmailPopupConversionRate())}
+                        {formatPercent(emailPopupConversionRate)}
                       </span>
                     </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div
                       className="bg-gradient-voyabear h-3 rounded-full"
-                      style={{ width: `${Math.min(getEmailPopupConversionRate(), 100)}%` }}
+                      style={{ width: `${Math.min(emailPopupConversionRate, 100)}%` }}
                     ></div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
@@ -550,16 +520,16 @@ export default function AnalyticsDashboard() {
                     </div>
                     <div className="text-right">
                       <span
-                        className={`text-xs font-semibold inline-block ${getConversionColor(getEmailResultsConversionRate())}`}
+                        className={`text-xs font-semibold inline-block ${getConversionColor(emailResultsConversionRate)}`}
                       >
-                        {formatPercent(getEmailResultsConversionRate())}
+                        {formatPercent(emailResultsConversionRate)}
                       </span>
                     </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div
                       className="bg-gradient-voyabear h-3 rounded-full"
-                      style={{ width: `${Math.min(getEmailResultsConversionRate(), 100)}%` }}
+                      style={{ width: `${Math.min(emailResultsConversionRate, 100)}%` }}
                     ></div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
