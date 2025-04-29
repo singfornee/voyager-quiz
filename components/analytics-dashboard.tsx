@@ -155,6 +155,23 @@ export default function AnalyticsDashboard() {
 
   const issues = analyzeFunnel()
 
+  // Helper function to safely get email count by source
+  const getEmailCountBySource = (source) => {
+    if (!data || !data.counters || !data.counters.emailSubmittedBySource) {
+      return 0
+    }
+
+    if (source === "popup") {
+      return data.counters.emailSubmittedBySource.popup || 0
+    }
+
+    if (source === "resultsPage") {
+      return data.counters.emailSubmittedBySource.resultsPage || 0
+    }
+
+    return 0
+  }
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="overview" className="w-full">
@@ -173,7 +190,7 @@ export default function AnalyticsDashboard() {
                 <Users className="h-5 w-5 text-voyabear-primary" />
                 <h3 className="font-medium">Quiz Started</h3>
               </div>
-              <p className="text-3xl font-bold">{data?.counters?.quizStarted || 0}</p>
+              <p className="text-3xl font-bold">{data.counters.quizStarted || 0}</p>
             </Card>
 
             <Card className="p-4 bg-white shadow-sm border-0">
@@ -181,9 +198,9 @@ export default function AnalyticsDashboard() {
                 <BarChart className="h-5 w-5 text-voyabear-secondary" />
                 <h3 className="font-medium">Quiz Completed</h3>
               </div>
-              <p className="text-3xl font-bold">{data?.counters?.quizCompleted || 0}</p>
-              <p className={`text-sm ${getConversionColor(data?.conversionRates?.completionRate)}`}>
-                {formatPercent(data?.conversionRates?.completionRate)} completion rate
+              <p className="text-3xl font-bold">{data.counters.quizCompleted || 0}</p>
+              <p className={`text-sm ${getConversionColor(data.conversionRates.completionRate)}`}>
+                {formatPercent(data.conversionRates.completionRate)} completion rate
               </p>
             </Card>
 
@@ -192,9 +209,9 @@ export default function AnalyticsDashboard() {
                 <Share2 className="h-5 w-5 text-voyabear-accent" />
                 <h3 className="font-medium">Profiles Shared</h3>
               </div>
-              <p className="text-3xl font-bold">{data?.counters?.profileShared || 0}</p>
-              <p className={`text-sm ${getConversionColor(data?.conversionRates?.shareRate)}`}>
-                {formatPercent(data?.conversionRates?.shareRate)} share rate
+              <p className="text-3xl font-bold">{data.counters.profileShared || 0}</p>
+              <p className={`text-sm ${getConversionColor(data.conversionRates.shareRate)}`}>
+                {formatPercent(data.conversionRates.shareRate)} share rate
               </p>
             </Card>
 
@@ -203,9 +220,9 @@ export default function AnalyticsDashboard() {
                 <Mail className="h-5 w-5 text-voyabear-tertiary" />
                 <h3 className="font-medium">Email Signups</h3>
               </div>
-              <p className="text-3xl font-bold">{data?.counters?.emailSubmitted || 0}</p>
-              <p className={`text-sm ${getConversionColor(data?.conversionRates?.emailConversionRate)}`}>
-                {formatPercent(data?.conversionRates?.emailConversionRate)} conversion
+              <p className="text-3xl font-bold">{data.counters.emailSubmitted || 0}</p>
+              <p className={`text-sm ${getConversionColor(data.conversionRates.emailConversionRate)}`}>
+                {formatPercent(data.conversionRates.emailConversionRate)} conversion
               </p>
             </Card>
           </div>
@@ -216,11 +233,11 @@ export default function AnalyticsDashboard() {
               <div className="w-full bg-gray-200 rounded-full h-4">
                 <div
                   className="bg-gradient-voyabear h-4 rounded-full"
-                  style={{ width: `${Math.min(data?.conversionRates?.overallConversionRate || 0, 100)}%` }}
+                  style={{ width: `${Math.min(data.conversionRates.overallConversionRate || 0, 100)}%` }}
                 ></div>
               </div>
-              <span className={`font-medium ${getConversionColor(data?.conversionRates?.overallConversionRate)}`}>
-                {formatPercent(data?.conversionRates?.overallConversionRate)}
+              <span className={`font-medium ${getConversionColor(data.conversionRates.overallConversionRate)}`}>
+                {formatPercent(data.conversionRates.overallConversionRate)}
               </span>
             </div>
             <p className="text-sm text-gray-500 mt-2">Quiz start to email signup conversion rate</p>
@@ -240,7 +257,7 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-primary">
-                      {data?.counters?.quizStarted || 0}
+                      {data.counters.quizStarted || 0}
                     </span>
                   </div>
                 </div>
@@ -258,7 +275,7 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-primary">
-                      {data?.counters?.quizCompleted || 0} ({formatPercent(data?.conversionRates?.completionRate)})
+                      {data.counters.quizCompleted || 0} ({formatPercent(data.conversionRates.completionRate)})
                     </span>
                   </div>
                 </div>
@@ -266,7 +283,7 @@ export default function AnalyticsDashboard() {
                   <div
                     className="bg-voyabear-primary h-3 rounded-full"
                     style={{
-                      width: `${((data?.counters?.quizCompleted || 0) / (data?.counters?.quizStarted || 1)) * 100}%`,
+                      width: `${((data.counters.quizCompleted || 0) / (data.counters.quizStarted || 1)) * 100}%`,
                     }}
                   ></div>
                 </div>
@@ -281,8 +298,7 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
-                      {data?.counters?.emailSubmittedBySource?.popup || 0} (
-                      {formatPercent(data?.conversionRates?.emailPopupConversionRate)})
+                      {getEmailCountBySource("popup")} ({formatPercent(data.conversionRates.emailPopupConversionRate)})
                     </span>
                   </div>
                 </div>
@@ -290,7 +306,7 @@ export default function AnalyticsDashboard() {
                   <div
                     className="bg-voyabear-tertiary h-3 rounded-full"
                     style={{
-                      width: `${((data?.counters?.emailSubmittedBySource?.popup || 0) / (data?.counters?.quizCompleted || 1)) * 100}%`,
+                      width: `${(getEmailCountBySource("popup") / (data.counters.quizCompleted || 1)) * 100}%`,
                     }}
                   ></div>
                 </div>
@@ -305,9 +321,8 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-primary">
-                      {data?.counters?.profileViewed || 0} (
-                      {formatPercent(((data?.counters?.profileViewed || 0) / (data?.counters?.quizStarted || 1)) * 100)}
-                      )
+                      {data.counters.profileViewed || 0} (
+                      {formatPercent(((data.counters.profileViewed || 0) / (data.counters.quizStarted || 1)) * 100)})
                     </span>
                   </div>
                 </div>
@@ -315,7 +330,7 @@ export default function AnalyticsDashboard() {
                   <div
                     className="bg-voyabear-primary h-3 rounded-full"
                     style={{
-                      width: `${((data?.counters?.profileViewed || 0) / (data?.counters?.quizStarted || 1)) * 100}%`,
+                      width: `${((data.counters.profileViewed || 0) / (data.counters.quizStarted || 1)) * 100}%`,
                     }}
                   ></div>
                 </div>
@@ -330,7 +345,7 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-primary">
-                      {data?.counters?.profileShared || 0} ({formatPercent(data?.conversionRates?.shareRate)})
+                      {data.counters.profileShared || 0} ({formatPercent(data.conversionRates.shareRate)})
                     </span>
                   </div>
                 </div>
@@ -338,7 +353,7 @@ export default function AnalyticsDashboard() {
                   <div
                     className="bg-voyabear-primary h-3 rounded-full"
                     style={{
-                      width: `${((data?.counters?.profileShared || 0) / (data?.counters?.quizStarted || 1)) * 100}%`,
+                      width: `${((data.counters.profileShared || 0) / (data.counters.quizStarted || 1)) * 100}%`,
                     }}
                   ></div>
                 </div>
@@ -353,8 +368,8 @@ export default function AnalyticsDashboard() {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
-                      {data?.counters?.emailSubmittedBySource?.resultsPage || 0} (
-                      {formatPercent(data?.conversionRates?.emailResultsConversionRate)})
+                      {getEmailCountBySource("resultsPage")} (
+                      {formatPercent(data.conversionRates.emailResultsConversionRate)})
                     </span>
                   </div>
                 </div>
@@ -362,7 +377,7 @@ export default function AnalyticsDashboard() {
                   <div
                     className="bg-voyabear-tertiary h-3 rounded-full"
                     style={{
-                      width: `${((data?.counters?.emailSubmittedBySource?.resultsPage || 0) / (data?.counters?.profileViewed || 1)) * 100}%`,
+                      width: `${(getEmailCountBySource("resultsPage") / (data.counters.profileViewed || 1)) * 100}%`,
                     }}
                   ></div>
                 </div>
@@ -375,7 +390,7 @@ export default function AnalyticsDashboard() {
           <Card className="p-6 bg-white shadow-sm border-0">
             <h3 className="text-lg font-medium mb-4">Question Drop-off Analysis</h3>
             <div className="space-y-4">
-              {Object.entries(data?.dropoffRates || {}).map(([questionIndex, rate]) => (
+              {Object.entries(data.dropoffRates || {}).map(([questionIndex, rate]) => (
                 <div key={questionIndex} className="relative pt-1">
                   <div className="flex items-center justify-between mb-2">
                     <div>
@@ -413,7 +428,7 @@ export default function AnalyticsDashboard() {
           <Card className="p-6 bg-white shadow-sm border-0">
             <h3 className="text-lg font-medium mb-4">Share Method Distribution</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(data?.shareMethodDistribution || {}).map(([method, percentage]) => (
+              {Object.entries(data.shareMethodDistribution || {}).map(([method, percentage]) => (
                 <div key={method} className="relative pt-1">
                   <div className="flex items-center justify-between mb-2">
                     <div>
@@ -440,7 +455,7 @@ export default function AnalyticsDashboard() {
           <Card className="p-6 bg-white shadow-sm border-0">
             <h3 className="text-lg font-medium mb-4">Email Signup Sources</h3>
             <div className="grid grid-cols-1 gap-4">
-              {Object.entries(data?.emailSourceDistribution || {}).map(([source, percentage]) => {
+              {Object.entries(data.emailSourceDistribution || {}).map(([source, percentage]) => {
                 // Format the source name for display
                 const sourceName =
                   source === "loading_modal"
@@ -448,6 +463,14 @@ export default function AnalyticsDashboard() {
                     : source === "results_page"
                       ? "Results Page"
                       : source.charAt(0).toUpperCase() + source.slice(1)
+
+                // Get the count for this source
+                const count =
+                  source === "loading_modal"
+                    ? getEmailCountBySource("popup")
+                    : source === "results_page"
+                      ? getEmailCountBySource("resultsPage")
+                      : 0
 
                 return (
                   <div key={source} className="relative pt-1">
@@ -459,9 +482,7 @@ export default function AnalyticsDashboard() {
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
-                          {(data?.counters?.emailSubmittedBySource && data.counters.emailSubmittedBySource[source]) ||
-                            0}{" "}
-                          ({formatPercent(percentage)})
+                          {count} ({formatPercent(percentage)})
                         </span>
                       </div>
                     </div>
@@ -485,16 +506,16 @@ export default function AnalyticsDashboard() {
                     </div>
                     <div className="text-right">
                       <span
-                        className={`text-xs font-semibold inline-block ${getConversionColor(data?.conversionRates?.emailPopupConversionRate)}`}
+                        className={`text-xs font-semibold inline-block ${getConversionColor(data.conversionRates.emailPopupConversionRate)}`}
                       >
-                        {formatPercent(data?.conversionRates?.emailPopupConversionRate)}
+                        {formatPercent(data.conversionRates.emailPopupConversionRate)}
                       </span>
                     </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div
-                      className={`bg-gradient-voyabear h-3 rounded-full`}
-                      style={{ width: `${Math.min(data?.conversionRates?.emailPopupConversionRate || 0, 100)}%` }}
+                      className="bg-gradient-voyabear h-3 rounded-full"
+                      style={{ width: `${Math.min(data.conversionRates.emailPopupConversionRate || 0, 100)}%` }}
                     ></div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
@@ -511,16 +532,16 @@ export default function AnalyticsDashboard() {
                     </div>
                     <div className="text-right">
                       <span
-                        className={`text-xs font-semibold inline-block ${getConversionColor(data?.conversionRates?.emailResultsConversionRate)}`}
+                        className={`text-xs font-semibold inline-block ${getConversionColor(data.conversionRates.emailResultsConversionRate)}`}
                       >
-                        {formatPercent(data?.conversionRates?.emailResultsConversionRate)}
+                        {formatPercent(data.conversionRates.emailResultsConversionRate)}
                       </span>
                     </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div
-                      className={`bg-gradient-voyabear h-3 rounded-full`}
-                      style={{ width: `${Math.min(data?.conversionRates?.emailResultsConversionRate || 0, 100)}%` }}
+                      className="bg-gradient-voyabear h-3 rounded-full"
+                      style={{ width: `${Math.min(data.conversionRates.emailResultsConversionRate || 0, 100)}%` }}
                     ></div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">

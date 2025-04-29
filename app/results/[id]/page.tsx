@@ -140,6 +140,14 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
 
   const profileEmoji = getProfileEmoji()
 
+  // Helper function to safely get image URL
+  const getImageUrl = (index) => {
+    if (!cityImages || !cityImages[index]) {
+      return `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(profileData.recommendedCities[index].name + " " + profileData.recommendedCities[index].country)}`
+    }
+    return cityImages[index].url
+  }
+
   return (
     <main className="min-h-screen bg-voyabear-light bg-confetti py-4 sm:py-8 overflow-hidden">
       {/* Background elements - hidden on small screens for better performance */}
@@ -489,11 +497,8 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                 cityIcon = <Music className="h-4 w-4 mr-1 text-voyabear-secondary" />
               }
 
-              // Create a placeholder URL as fallback
-              const placeholderUrl = `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(city.name + " " + city.country)}`
-
-              // Get the image URL from cityImages or use placeholder
-              const imageUrl = (cityImages && cityImages[index] && cityImages[index].url) || placeholderUrl
+              // Get image URL safely
+              const imageUrl = getImageUrl(index)
 
               return (
                 <Card key={index} className="overflow-hidden border-0 shadow-md card-hover h-full">
