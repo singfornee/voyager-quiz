@@ -7,7 +7,6 @@ import { Sparkles } from "lucide-react"
 import Image from "next/image"
 import dynamic from "next/dynamic"
 import LanguagePrompt from "@/components/language-prompt"
-import { useTranslation } from "@/lib/i18n"
 
 // Lazy load the TravelQuiz component
 const TravelQuiz = dynamic(() => import("@/components/travel-quiz"), {
@@ -15,7 +14,7 @@ const TravelQuiz = dynamic(() => import("@/components/travel-quiz"), {
 })
 
 export default function Home() {
-  const { language, setLanguage } = useTranslation()
+  const [language, setLanguage] = useState<"en" | "zh-TW">("en")
   const [showLanguagePrompt, setShowLanguagePrompt] = useState(false)
 
   // Check language preference and detect browser language
@@ -23,10 +22,16 @@ export default function Home() {
     // First check if user has a saved preference
     const savedLanguage = localStorage.getItem("voyabear_language") as "en" | "zh-TW" | null
 
-    if (!savedLanguage) {
+    if (savedLanguage) {
+      // User has a saved preference, use it
+      setLanguage(savedLanguage)
+    } else {
       // No saved preference, check browser language
       const browserLang = navigator.language.toLowerCase()
       const isMandarin = browserLang.startsWith("zh")
+
+      // Default to English, but show prompt for Mandarin users
+      setLanguage("en")
 
       // Show language prompt for Mandarin users
       if (isMandarin) {
@@ -38,6 +43,13 @@ export default function Home() {
       }
     }
   }, [])
+
+  // Handle language change
+  const handleLanguageChange = (newLanguage: "en" | "zh-TW") => {
+    setLanguage(newLanguage)
+    localStorage.setItem("voyabear_language", newLanguage)
+    setShowLanguagePrompt(false)
+  }
 
   // Handle prompt dismissal
   const handlePromptDismiss = () => {
@@ -84,6 +96,16 @@ export default function Home() {
         <div className="absolute -top-6 -left-16 w-32 h-32 bg-voyabear-secondary/20 rounded-full blur-3xl" />
         <div className="absolute top-1/4 -right-20 w-40 h-40 bg-voyabear-primary/20 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 -left-10 w-24 h-24 bg-voyabear-tertiary/20 rounded-full blur-3xl" />
+
+        {/* Language switcher in top-right corner */}
+        <div className="absolute top-2 right-2 z-10">
+          <button
+            onClick={() => handleLanguageChange(language === "en" ? "zh-TW" : "en")}
+            className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-voyabear-primary hover:bg-white transition-colors shadow-sm flex items-center"
+          >
+            {language === "en" ? "中文" : "English"}
+          </button>
+        </div>
 
         <header className="text-center mb-8 sm:mb-12 relative">
           <div className="flex justify-center items-center mb-4 sm:mb-6">
@@ -183,7 +205,9 @@ export default function Home() {
       </div>
 
       {/* Language prompt for Mandarin users */}
-      {showLanguagePrompt && <LanguagePrompt onAccept={() => setLanguage("zh-TW")} onDismiss={handlePromptDismiss} />}
+      {showLanguagePrompt && (
+        <LanguagePrompt onAccept={() => handleLanguageChange("zh-TW")} onDismiss={handlePromptDismiss} />
+      )}
 
       <OfflineNotice />
     </main>

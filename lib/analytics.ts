@@ -19,7 +19,6 @@ export interface EventData {
   profileId?: string
   shareMethod?: string
   dropoffPoint?: string
-  source?: string // Added source field to track where the email was submitted
 }
 
 // Google Analytics event tracking
@@ -48,21 +47,6 @@ export async function incrementCounter(key: string): Promise<void> {
   }
 }
 
-// Increment a counter with a source
-export async function incrementCounterWithSource(key: string, source: string): Promise<void> {
-  try {
-    // Increment the main counter
-    await incrementCounter(key)
-
-    // Also increment a source-specific counter
-    const sourceCounterKey = `analytics:counter:${key}_${source}`
-    const currentSourceValue = (await storage.get<number>(sourceCounterKey)) || 0
-    await storage.set(sourceCounterKey, currentSourceValue + 1)
-  } catch (error) {
-    console.error(`Error incrementing counter ${key} with source ${source}:`, error)
-  }
-}
-
 // Get a counter value
 export async function getCounter(key: string): Promise<number> {
   try {
@@ -74,37 +58,18 @@ export async function getCounter(key: string): Promise<number> {
   }
 }
 
-// Get a counter value with source
-export async function getCounterWithSource(key: string, source: string): Promise<number> {
-  try {
-    const sourceCounterKey = `analytics:counter:${key}_${source}`
-    return (await storage.get<number>(sourceCounterKey)) || 0
-  } catch (error) {
-    console.error(`Error getting counter ${key} with source ${source}:`, error)
-    return 0
-  }
-}
-
 // Get conversion rates
 export async function getConversionRates(): Promise<Record<string, number>> {
   const quizStarted = await getCounter("quiz_started")
   const quizCompleted = await getCounter("quiz_completed")
   const profileViewed = await getCounter("profile_viewed")
   const profileShared = await getCounter("profile_shared")
-
-  // Get total email submissions
   const emailSubmitted = await getCounter("email_submitted")
-
-  // Get email submissions by source
-  const emailSubmittedPopup = await getCounterWithSource("email_submitted", "loading_modal")
-  const emailSubmittedResults = await getCounterWithSource("email_submitted", "results_page")
 
   return {
     completionRate: quizStarted ? (quizCompleted / quizStarted) * 100 : 0,
     shareRate: profileViewed ? (profileShared / profileViewed) * 100 : 0,
     emailConversionRate: profileViewed ? (emailSubmitted / profileViewed) * 100 : 0,
-    emailPopupConversionRate: quizCompleted ? (emailSubmittedPopup / quizCompleted) * 100 : 0,
-    emailResultsConversionRate: profileViewed ? (emailSubmittedResults / profileViewed) * 100 : 0,
     overallConversionRate: quizStarted ? (emailSubmitted / quizStarted) * 100 : 0,
   }
 }
@@ -138,7 +103,7 @@ export async function getQuestionDropoffRates(): Promise<Record<number, number>>
   return dropoffRates
 }
 
-// Gete method distribution
+// Get share method distribution
 export async function getShareMethodDistribution(): Promise<Record<string, number>> {
   const methods = ["facebook", "twitter", "linkedin", "email", "copy", "download"]
   const distribution: Record<string, number> = {}
@@ -149,22 +114,6 @@ export async function getShareMethodDistribution(): Promise<Record<string, numbe
   for (const method of methods) {
     const count = await getCounter(`share_method_${method}`)
     distribution[method] = totalShares ? (count / totalShares) * 100 : 0
-  }
-
-  return distribution
-}
-
-// Get email submission source distribution
-export async function getEmailSourceDistribution(): Promise<Record<string, number>> {
-  const sources = ["loading_modal", "results_page"]
-  const distribution: Record<string, number> = {}
-  const totalEmails = await getCounter("email_submitted")
-
-  if (!totalEmails) return distribution
-
-  for (const source of sources) {
-    const count = await getCounterWithSource("email_submitted", source)
-    distribution[source] = totalEmails ? (count / totalEmails) * 100 : 0
   }
 
   return distribution

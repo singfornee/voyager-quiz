@@ -97,42 +97,19 @@ export default function SignupModal({ onClose, profileType = "", language = "en"
       await subscribeToMailchimp(email, name, profileType)
       setIsSuccess(true)
 
-      // Track email submission in our analytics
+      // Track email submission
       analyticsClient.trackEvent("email_submitted", {
         sessionId: getSessionId(),
         source: "loading_modal",
         language,
       })
 
-      // Track email conversion in Google Analytics
+      // Track conversion
       trackConversion("email_signup", {
         profile_type: profileType,
         source: "loading_modal",
         language,
-        conversion_type: "email_popup",
       })
-
-      // Increment the counter for email submissions in our admin analytics
-      try {
-        // Use fetch to call our analytics API endpoint
-        fetch("/api/analytics/track", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            event: "email_submitted",
-            data: {
-              source: "loading_modal",
-              profileType,
-              language,
-            },
-          }),
-        })
-      } catch (analyticsError) {
-        // Don't fail the submission if analytics tracking fails
-        console.error("Error tracking analytics:", analyticsError)
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : t.errorGeneric)
     } finally {
