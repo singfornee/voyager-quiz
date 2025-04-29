@@ -98,12 +98,11 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
       } catch (error) {
         console.error("Error loading city images:", error)
         // Set fallback images
-        setCityImages(
-          profileData.recommendedCities.map((city) => ({
-            url: `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(`${city.name} ${city.country}`)}`,
-            query: `${city.name} ${city.country}`,
-          })),
-        )
+        const fallbackImages = profileData.recommendedCities.map((city) => ({
+          url: `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(`${city.name} ${city.country}`)}`,
+          query: `${city.name} ${city.country}`,
+        }))
+        setCityImages(fallbackImages)
       } finally {
         setImagesLoading(false)
       }
@@ -120,16 +119,10 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
     notFound()
   }
 
-  // Emoji mapping for profile types
-  const profileEmojis: Record<string, string> = {
-    cultural: "🏛️",
-    adventure: "🏔️",
-    luxury: "✨",
-    authentic: "🌿",
-  }
-
   // Get emoji based on profile name (fallback to random travel emoji)
   const getProfileEmoji = () => {
+    if (!profileData || !profileData.profileName) return "🧳"
+
     const lowerName = profileData.profileName.toLowerCase()
     if (lowerName.includes("cultural") || lowerName.includes("history")) return "🏛️"
     if (lowerName.includes("adventure") || lowerName.includes("explorer")) return "🏔️"
@@ -142,10 +135,50 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
 
   // Helper function to safely get image URL
   const getImageUrl = (index) => {
-    if (!cityImages || !cityImages[index]) {
-      return `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(profileData.recommendedCities[index].name + " " + profileData.recommendedCities[index].country)}`
+    if (!cityImages || !cityImages[index] || !cityImages[index].url) {
+      // Create a fallback URL
+      const city = profileData.recommendedCities[index]
+      return `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(city.name + " " + city.country)}`
     }
     return cityImages[index].url
+  }
+
+  // Helper function to determine city icon
+  const getCityIcon = (city) => {
+    if (!city) return <MapPin className="h-4 w-4 mr-1 text-voyabear-secondary" />
+
+    const cityName = city.name.toLowerCase()
+    const countryName = city.country.toLowerCase()
+    const reason = city.reason.toLowerCase()
+
+    if (
+      cityName.includes("beach") ||
+      countryName.includes("island") ||
+      cityName.includes("海灘") ||
+      countryName.includes("島")
+    ) {
+      return <Sun className="h-4 w-4 mr-1 text-voyabear-secondary" />
+    }
+
+    if (
+      cityName.includes("york") ||
+      cityName.includes("tokyo") ||
+      cityName.includes("london") ||
+      cityName.includes("東京") ||
+      cityName.includes("倫敦")
+    ) {
+      return <Briefcase className="h-4 w-4 mr-1 text-voyabear-secondary" />
+    }
+
+    if (reason.includes("food") || reason.includes("cuisine") || reason.includes("美食") || reason.includes("料理")) {
+      return <Utensils className="h-4 w-4 mr-1 text-voyabear-secondary" />
+    }
+
+    if (reason.includes("music") || reason.includes("festival") || reason.includes("音樂") || reason.includes("節慶")) {
+      return <Music className="h-4 w-4 mr-1 text-voyabear-secondary" />
+    }
+
+    return <MapPin className="h-4 w-4 mr-1 text-voyabear-secondary" />
   }
 
   return (
@@ -463,41 +496,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
           {/* Improved grid layout for destinations */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {profileData.recommendedCities.map((city, index) => {
-              // Dynamic icon based on city name or country
-              let cityIcon = <MapPin className="h-4 w-4 mr-1 text-voyabear-secondary" />
-
-              if (
-                city.name.toLowerCase().includes("beach") ||
-                city.country.toLowerCase().includes("island") ||
-                city.name.includes("海灘") ||
-                city.country.includes("島")
-              ) {
-                cityIcon = <Sun className="h-4 w-4 mr-1 text-voyabear-secondary" />
-              } else if (
-                city.name.toLowerCase().includes("york") ||
-                city.name.toLowerCase().includes("tokyo") ||
-                city.name.toLowerCase().includes("london") ||
-                city.name.includes("東京") ||
-                city.name.includes("倫敦")
-              ) {
-                cityIcon = <Briefcase className="h-4 w-4 mr-1 text-voyabear-secondary" />
-              } else if (
-                city.reason.toLowerCase().includes("food") ||
-                city.reason.toLowerCase().includes("cuisine") ||
-                city.reason.includes("美食") ||
-                city.reason.includes("料理")
-              ) {
-                cityIcon = <Utensils className="h-4 w-4 mr-1 text-voyabear-secondary" />
-              } else if (
-                city.reason.toLowerCase().includes("music") ||
-                city.reason.toLowerCase().includes("festival") ||
-                city.reason.includes("音樂") ||
-                city.reason.includes("節慶")
-              ) {
-                cityIcon = <Music className="h-4 w-4 mr-1 text-voyabear-secondary" />
-              }
-
-              // Get image URL safely
+              const cityIcon = getCityIcon(city)
               const imageUrl = getImageUrl(index)
 
               return (
