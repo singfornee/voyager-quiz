@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { trackEvent } from "@/lib/analytics"
+import { trackServerEvent } from "@/lib/analytics-server"
 
 export async function POST(request: Request) {
   try {
@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Event name is required" }, { status: 400 })
     }
 
-    await trackEvent(event, data)
+    await trackServerEvent(event, data)
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -1,0 +1,37 @@
+"use server"
+
+import { storage } from "./storage"
+
+// Server-side analytics tracking
+export async function trackServerEvent(event: string, data: any): Promise<void> {
+  try {
+    // Store the event in the database
+    const eventKey = `analytics:event:${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+    await storage.set(eventKey, {
+      event,
+      data,
+      timestamp: Date.now(),
+    })
+
+    // Increment the counter for this event type
+    const counterKey = `analytics:counter:${event}`
+    const currentCount = (await storage.get<number>(counterKey)) || 0
+    await storage.set(counterKey, currentCount + 1)
+
+    // If this is a question_answered event, track the question index
+    if (event === "question_answered" && data?.questionIndex !== undefined) {
+      const questionKey = `analytics:counter:question_${data.questionIndex}_answered`
+      const currentQuestionCount = (await storage.get<number>(questionKey)) || 0
+      await storage.set(questionKey, currentQuestionCount + 1)
+    }
+
+    // If this is a profile_shared event, track the share method
+    if (event === "profile_shared" && data?.shareMethod) {
+      const shareMethodKey = `analytics:counter:share_method_${data.shareMethod}`
+      const currentShareCount = (await storage.get<number>(shareMethodKey)) || 0
+      await storage.set(shareMethodKey, currentShareCount + 1)
+    }
+  } catch (error) {
+    console.error("Error tracking server event:", error)
+  }
+}

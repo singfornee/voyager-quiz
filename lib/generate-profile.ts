@@ -24,6 +24,7 @@ function extractJSON(text: string): string {
   return text.trim()
 }
 
+// Make sure the function is declared as async
 export async function generateProfile(answers: number[]): Promise<string> {
   // Create a more detailed analysis of the answers
   // This helps the AI understand the nuances of the user's preferences

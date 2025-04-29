@@ -59,12 +59,12 @@
     "vaul": "^0.9.6",
     "zod": "^3.24.1",
     "@emotion/is-prop-valid": "latest",
-    "crypto": "latest",
     "nanoid": "latest",
     "@vercel/kv": "latest",
+    "framer-motion": "latest",
+    "crypto": "latest",
     "ai": "latest",
-    "@ai-sdk/openai": "latest",
-    "framer-motion": "latest"
+    "@ai-sdk/openai": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
