@@ -1,23 +1,23 @@
 "use client"
 
-import type React from "react"
-
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
 // Define the language type
 export type Language = "en" | "zh-TW"
 
 // Create a context for the language
-const TranslationContext = createContext<{
+interface TranslationContextType {
   language: Language
   setLanguage: (language: Language) => void
-}>({
+}
+
+const TranslationContext = createContext<TranslationContextType>({
   language: "en",
   setLanguage: () => {},
 })
 
 // Create a provider component
-export function TranslationProvider({ children }: { children: React.ReactNode }) {
+export function TranslationProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>("en")
 
   // Load language from localStorage on mount

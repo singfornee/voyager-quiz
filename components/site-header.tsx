@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import LanguageSwitcher from "@/components/language-switcher"
+import LanguageSwitcher from "./language-switcher"
 
 export default function SiteHeader() {
   return (
