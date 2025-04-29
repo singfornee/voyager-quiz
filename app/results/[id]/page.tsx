@@ -46,6 +46,8 @@ interface UnsplashImageData {
   query?: string
   photographer?: string
   photographerUrl?: string
+  city?: string
+  country?: string
 }
 
 export default function ResultsPage({ params }: { params: { id: string } }) {
@@ -476,7 +478,9 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
               }
 
               // Create a placeholder URL as fallback
-              const placeholderUrl = `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(city.name + " " + city.country)}`
+              const placeholderUrl = `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(
+                city.name + " " + city.country,
+              )}`
 
               // Get the image URL from cityImages or use placeholder
               const imageUrl = cityImages[index]?.url || placeholderUrl
