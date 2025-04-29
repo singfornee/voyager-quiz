@@ -61,10 +61,10 @@
     "@emotion/is-prop-valid": "latest",
     "nanoid": "latest",
     "@vercel/kv": "latest",
-    "framer-motion": "latest",
     "crypto": "latest",
     "ai": "latest",
-    "@ai-sdk/openai": "latest"
+    "@ai-sdk/openai": "latest",
+    "framer-motion": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

@@ -28,10 +28,10 @@ import {
   Briefcase,
 } from "lucide-react"
 import Link from "next/link"
-import MailchimpSignup from "@/components/mailchimp-signup"
 import ShareProfile from "@/components/share-profile"
+import ResultsCta from "@/components/results-cta"
 import type { ProfileData } from "@/lib/storage"
-import { getUnsplashImage } from "@/lib/unsplash"
+import { fetchCityImages } from "@/lib/unsplash"
 import Image from "next/image"
 import BackToTop from "@/components/back-to-top"
 import { useEffect, useState } from "react"
@@ -41,6 +41,7 @@ import LoadingResults from "@/components/loading-results"
 // Type for Unsplash image data
 interface UnsplashImageData {
   url: string
+  query?: string
   photographer?: string
   photographerUrl?: string
 }
@@ -49,8 +50,10 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const [cityImages, setCityImages] = useState<UnsplashImageData[]>([])
   const [loading, setLoading] = useState(true)
+  const [imagesLoading, setImagesLoading] = useState(true)
 
   useEffect(() => {
+    // First load critical profile data
     const fetchProfileData = async () => {
       try {
         // Fetch profile data
@@ -67,15 +70,6 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
           sessionId: getSessionId(),
           profileId: params.id,
         })
-
-        // Fetch city images
-        const imagePromises = data.recommendedCities.map(async (city: any) => {
-          const imageUrl = await getUnsplashImage(`${city.name} ${city.country} cityscape`, 600, 400)
-          return { url: imageUrl } as UnsplashImageData
-        })
-
-        const images = await Promise.all(imagePromises)
-        setCityImages(images)
       } catch (error) {
         console.error("Error fetching profile:", error)
         notFound()
@@ -86,6 +80,32 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
 
     fetchProfileData()
   }, [params.id])
+
+  // Load city images after profile data is available
+  useEffect(() => {
+    if (!profileData) return
+
+    const loadCityImages = async () => {
+      try {
+        setImagesLoading(true)
+        const images = await fetchCityImages(profileData.recommendedCities)
+        setCityImages(images)
+      } catch (error) {
+        console.error("Error loading city images:", error)
+        // Set fallback images
+        setCityImages(
+          profileData.recommendedCities.map((city) => ({
+            url: `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(`${city.name} ${city.country}`)}`,
+            query: `${city.name} ${city.country}`,
+          })),
+        )
+      } finally {
+        setImagesLoading(false)
+      }
+    }
+
+    loadCityImages()
+  }, [profileData])
 
   if (loading) {
     return <LoadingResults />
@@ -164,19 +184,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
         </Link>
 
         <header className="text-center mb-6 sm:mb-10 relative">
-          <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3 sm:mb-4 relative">
-            <div className="absolute -inset-4 rounded-full bg-white/50 blur-lg"></div>
-            <Image
-              src="/voyabear-mascot.png"
-              alt="VoyaBear Mascot"
-              width={128}
-              height={128}
-              className="animate-float relative z-10"
-            />
-            <div className="absolute -bottom-2 w-full h-4 bg-black/10 blur-md rounded-full"></div>
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-2 sm:mb-3 relative text-shadow">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-5 relative text-shadow">
             <span className="gradient-text glow-text">Here's Your Travel Type!</span>
           </h1>
 
@@ -464,21 +472,27 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                 cityIcon = <Music className="h-4 w-4 mr-1 text-voyabear-secondary" />
               }
 
+              // Create a placeholder URL as fallback
+              const placeholderUrl = `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(city.name + " " + city.country)}`
+
+              // Get the image URL from cityImages or use placeholder
+              const imageUrl = cityImages[index]?.url || placeholderUrl
+
               return (
                 <Card key={index} className="overflow-hidden border-0 shadow-md card-hover h-full">
                   <div className="h-32 sm:h-40 bg-gray-200 relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
-                    <Image
-                      src={
-                        cityImages[index]?.url ||
-                        `/placeholder.svg?height=400&width=600&query=${
-                          encodeURIComponent(city.name + " " + city.country + " cityscape") || "/placeholder.svg"
-                        }`
-                      }
-                      alt={`${city.name}, ${city.country}`}
-                      fill
-                      className="object-cover"
-                    />
+                    <div className="absolute inset-0 bg-voyabear-light/50">
+                      <Image
+                        src={imageUrl || "/placeholder.svg"}
+                        alt={`${city.name}, ${city.country}`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover"
+                        unoptimized={!cityImages[index]?.url}
+                        priority={index < 3} // Prioritize loading the first 3 images
+                      />
+                    </div>
                     <div className="absolute bottom-0 left-0 p-3 z-20">
                       <h3 className="font-medium text-white text-base sm:text-lg mb-0.5 flex items-center">
                         {cityIcon}
@@ -525,17 +539,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
           </Card>
 
           <Card className="p-4 sm:p-6 bg-white border-0 shadow-md rounded-xl card-glass">
-            <div className="flex items-center mb-3 sm:mb-4">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-voyabear flex items-center justify-center mr-2 sm:mr-3 shadow-md">
-                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-              </div>
-              <h2 className="text-lg sm:text-xl font-semibold text-voyabear-primary">Get On The List</h2>
-            </div>
-            <p className="text-gray-700 mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
-              <Camera className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-voyabear-tertiary" />
-              We'll send you cool travel stuff. No spam, promise!
-            </p>
-            <MailchimpSignup profileType={profileData.profileName} />
+            <ResultsCta profileType={profileData.profileName} />
           </Card>
         </div>
 

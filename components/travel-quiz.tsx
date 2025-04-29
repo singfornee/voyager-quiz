@@ -14,6 +14,7 @@ import { analyticsClient, getSessionId } from "@/lib/analytics-client"
 // Add import for trackEvent
 import { trackEvent } from "@/lib/analytics"
 import { trackQuizInteraction, trackConversion } from "@/lib/ga-utils"
+import SignupModal from "./signup-modal"
 
 // Restored original questions with full descriptive text
 const questions = [
@@ -107,6 +108,7 @@ export default function TravelQuiz() {
   const touchEndX = useRef<number | null>(null)
   const router = useRouter()
   const [sessionId, setSessionId] = useState<string>("")
+  const [showSignupModal, setShowSignupModal] = useState(false)
 
   // Generate a session ID on component mount
   useEffect(() => {
@@ -135,7 +137,7 @@ export default function TravelQuiz() {
     }
   }
 
-  // Update the handleNextQuestion function to track question navigation
+  // Checking the relevant part where the form is submitted and loading state is set
   const handleNextQuestion = async () => {
     if (selectedOption === null) return
 
@@ -167,8 +169,9 @@ export default function TravelQuiz() {
         })
       }, 300)
     } else {
-      // All questions answered, generate profile
+      // All questions answered, show signup modal and generate profile
       setIsSubmitting(true)
+      setShowSignupModal(true) // Show the signup modal immediately
 
       // Track quiz completion in Google Analytics
       trackConversion("quiz_completed", {
@@ -192,6 +195,7 @@ export default function TravelQuiz() {
       } catch (error) {
         console.error("Error generating profile:", error)
         setIsSubmitting(false)
+        setShowSignupModal(false) // Hide modal on error
 
         // Track drop-off due to error
         analyticsClient.trackEvent("question_answered", {
@@ -355,6 +359,7 @@ export default function TravelQuiz() {
                 className="animate-float"
               />
             </div>
+            {/* Add priority to important images */}
 
             <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
               {questions[currentQuestion].question}
@@ -425,6 +430,7 @@ export default function TravelQuiz() {
           </Card>
         </motion.div>
       </AnimatePresence>
+      {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} profileType="" />}
     </div>
   )
 }

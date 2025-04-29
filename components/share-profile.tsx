@@ -6,8 +6,6 @@ import { Facebook, Twitter, Copy, CheckCircle2, Share2 } from "lucide-react"
 import type { ProfileData } from "@/lib/storage"
 import { analyticsClient, getSessionId } from "@/lib/analytics-client"
 import { Card } from "@/components/ui/card"
-
-// Add import for trackEvent
 import { trackEvent } from "@/lib/ga-utils"
 
 interface ShareProfileProps {
@@ -21,9 +19,8 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
   const [activeTab, setActiveTab] = useState<"social" | "copy">("social")
   const [shareError, setShareError] = useState<string | null>(null)
 
-  // Get the full URL to share
+  // Get the full URL to share - ensure we use absolute URLs
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://voyabear.com"
-
   const shareUrl = `${baseUrl}/results/${profileId}`
 
   // Create a more engaging share text with emojis that match the profile
@@ -53,7 +50,7 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
     trait ? `I'm ${trait}` : ""
   } and my travel superpower is ${superpower}. #VoyaBear`
 
-  // Update the handleCopyLink function
+  // Handle copy link
   const handleCopyLink = () => {
     try {
       navigator.clipboard.writeText(shareUrl)
@@ -73,12 +70,6 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
         profile_type: profileName,
       })
 
-      // Track in Google Analytics
-      trackEvent("share", "profile_sharing", "Copy link", undefined, false, {
-        profile_id: profileId,
-        share_method: "copy",
-      })
-
       setTimeout(() => setCopied(false), 2000)
     } catch (error) {
       console.error("Error copying to clipboard:", error)
@@ -86,6 +77,7 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
     }
   }
 
+  // Handle copy text
   const handleCopyText = () => {
     try {
       navigator.clipboard.writeText(`${shareText}\n\nTake the quiz: ${shareUrl}`)
@@ -159,21 +151,16 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
     }
   }
 
+  // Fixed social sharing links
   const shareLinks = [
-    // Update other sharing methods similarly
-    // For example, update the Facebook share action:
     {
       name: "Facebook",
       icon: <Facebook className="h-4 w-4 sm:h-5 sm:w-5" />,
       action: () => {
         try {
-          window.open(
-            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(
-              shareText,
-            )}`,
-            "_blank",
-            "noopener,noreferrer",
-          )
+          // Properly encode the URL and text for Facebook sharing
+          const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`
+          window.open(fbShareUrl, "_blank", "noopener,noreferrer,width=600,height=400")
           setShareError(null)
 
           // Track share event
@@ -188,12 +175,6 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
             profile_id: profileId,
             profile_type: profileName,
           })
-
-          // Track in Google Analytics
-          trackEvent("share", "profile_sharing", "Facebook", undefined, false, {
-            profile_id: profileId,
-            share_method: "facebook",
-          })
         } catch (error) {
           console.error("Error opening Facebook share:", error)
           setShareError("Couldn't open Facebook. Please try a different method.")
@@ -206,11 +187,9 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
       icon: <Twitter className="h-4 w-4 sm:h-5 sm:w-5" />,
       action: () => {
         try {
-          window.open(
-            `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-            "_blank",
-            "noopener,noreferrer",
-          )
+          // Properly encode the URL and text for Twitter sharing
+          const twitterShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
+          window.open(twitterShareUrl, "_blank", "noopener,noreferrer,width=600,height=400")
           setShareError(null)
 
           // Track share event
@@ -302,11 +281,9 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
       ),
       action: () => {
         try {
-          window.open(
-            `https://wa.me/?text=${encodeURIComponent(`${shareText}\n\nTake the quiz: ${shareUrl}`)}`,
-            "_blank",
-            "noopener,noreferrer",
-          )
+          // Properly encode the URL and text for WhatsApp sharing
+          const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText}\n\nTake the quiz: ${shareUrl}`)}`
+          window.open(whatsappShareUrl, "_blank", "noopener,noreferrer")
           setShareError(null)
 
           // Track share event

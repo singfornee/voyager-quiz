@@ -1,9 +1,14 @@
 import { Suspense } from "react"
-import TravelQuiz from "@/components/travel-quiz"
 import LoadingQuiz from "@/components/loading-quiz"
 import OfflineNotice from "@/components/offline-notice"
 import { Sparkles } from "lucide-react"
 import Image from "next/image"
+import dynamic from "next/dynamic"
+
+// Lazy load the TravelQuiz component
+const TravelQuiz = dynamic(() => import("@/components/travel-quiz"), {
+  loading: () => <LoadingQuiz />,
+})
 
 export default function Home() {
   return (

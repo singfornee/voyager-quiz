@@ -56,8 +56,17 @@
   @apply bg-gradient-to-r from-voyabear-neon to-voyabear-secondary;
 }
 
+/* Simplify animations for better performance */
 .animate-float {
   animation: float 6s ease-in-out infinite;
+  will-change: transform; /* Optimize for GPU acceleration */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-delayed {
+    animation: none;
+  }
 }
 
 .animate-float-delayed {

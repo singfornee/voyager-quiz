@@ -24,8 +24,17 @@ function extractJSON(text: string): string {
   return text.trim()
 }
 
-// Make sure the function is declared as async
+// Add caching for similar answer patterns
 export async function generateProfile(answers: number[]): Promise<string> {
+  // Generate a cache key based on answers
+  const cacheKey = `profile:cache:${answers.join("")}`
+
+  // Check if we have a cached result
+  const cachedProfile = await storage.get<string>(cacheKey)
+  if (cachedProfile) {
+    return cachedProfile
+  }
+
   // Create a more detailed analysis of the answers
   // This helps the AI understand the nuances of the user's preferences
   const answerAnalysis = [
@@ -233,6 +242,9 @@ export async function generateProfile(answers: number[]): Promise<string> {
         answers,
         createdAt: new Date().toISOString(),
       })
+
+      // Before returning profileId, cache the result
+      await storage.set(cacheKey, profileId, { ex: 60 * 60 * 24 * 7 }) // Cache for a week
 
       return profileId
     } catch (parseError) {
