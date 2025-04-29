@@ -1,189 +1,133 @@
-"use client"
-
-import { useState, useEffect, useCallback } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import QuizContainer from "@/components/quiz-container"
-import { useLanguage } from "@/contexts/language-context"
-import LanguageSwitcher from "@/components/language-switcher"
-import { analytics } from "@/lib/analytics"
+import { Suspense } from "react"
+import TravelQuiz from "@/components/travel-quiz"
+import LoadingQuiz from "@/components/loading-quiz"
+import OfflineNotice from "@/components/offline-notice"
+import { Sparkles } from "lucide-react"
 import Image from "next/image"
-import { motion } from "framer-motion"
-import { Sparkles, ArrowRight } from "lucide-react"
 
 export default function Home() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { language } = useLanguage()
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  // Check if quiz should be started (from URL parameter or localStorage)
-  const startParam = searchParams.get("start")
-  const [quizStarted, setQuizStarted] = useState(false)
-
-  // State to force quiz container to reset
-  const [resetKey, setResetKey] = useState(0)
-
-  useEffect(() => {
-    setIsLoaded(true)
-
-    // Check if quiz is already started in localStorage
-    const quizInProgress = localStorage.getItem("quiz_started") === "true"
-    setQuizStarted(startParam === "true" || quizInProgress)
-
-    analytics.track("page_view", { page: "landing" })
-  }, [startParam])
-
-  // Function to handle reset when Voyager AI is clicked
-  const handleReset = useCallback(() => {
-    // Clear quiz state from localStorage
-    localStorage.removeItem("quiz_started")
-    localStorage.removeItem("quiz_current_question")
-    localStorage.removeItem("quiz_answers")
-    localStorage.removeItem("quiz_profile")
-
-    // Force re-render of QuizContainer with a new key
-    setResetKey((prev) => prev + 1)
-    setQuizStarted(false)
-  }, [])
-
-  const handleStartQuiz = () => {
-    analytics.track("quiz_start", { source: "landing_page" })
-    setQuizStarted(true)
-    localStorage.setItem("quiz_started", "true")
-
-    // Set current question to 0 to skip the start screen
-    localStorage.setItem("quiz_current_question", "0")
-  }
-
   return (
-    <main className="min-h-screen bg-gradient-to-br from-violet-500 via-purple-400 to-pink-500 overflow-hidden">
-      <div className="container max-w-4xl mx-auto px-4 py-6 relative">
-        <header className="mb-4">
-          <div className="flex justify-between items-center mb-4">
-            <div
-              className="inline-block animate-float cursor-pointer hover:scale-105 transition-transform"
-              onClick={handleReset}
-              title="Restart Quiz"
-            >
-              <div className="flex items-center justify-center bg-white/20 backdrop-blur-sm p-2 sm:p-3 rounded-full">
-                <Sparkles className="h-5 w-5 text-white mr-2" />
-                <span className="text-white font-bold">Voyager AI</span>
-              </div>
+    <main className="min-h-screen bg-voyabear-light bg-travel-pattern overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-voyabear-primary/10 to-transparent pointer-events-none" />
+      <div className="hidden sm:block absolute top-20 left-10 w-16 h-16 opacity-20">
+        <Image
+          src="/travel-illustrations/airplane.png"
+          alt="Airplane"
+          width={64}
+          height={64}
+          className="animate-float"
+        />
+      </div>
+      <div className="hidden sm:block absolute top-40 right-10 w-12 h-12 opacity-20">
+        <Image
+          src="/travel-illustrations/compass.png"
+          alt="Compass"
+          width={48}
+          height={48}
+          className="animate-float-delayed"
+        />
+      </div>
+      <div className="hidden sm:block absolute bottom-20 left-20 w-14 h-14 opacity-20">
+        <Image
+          src="/travel-illustrations/passport.png"
+          alt="Passport"
+          width={56}
+          height={56}
+          className="animate-float"
+        />
+      </div>
+      <div className="hidden sm:block absolute bottom-40 right-20 w-16 h-16 opacity-20">
+        <Image src="/travel-illustrations/camera.png" alt="Camera" width={64} height={64} className="animate-float" />
+      </div>
+
+      <div className="container mx-auto px-4 py-6 sm:py-12 max-w-4xl relative">
+        <div className="absolute -top-6 -left-16 w-32 h-32 bg-voyabear-secondary/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 -right-20 w-40 h-40 bg-voyabear-primary/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -left-10 w-24 h-24 bg-voyabear-tertiary/20 rounded-full blur-3xl" />
+
+        <header className="text-center mb-8 sm:mb-12 relative">
+          <div className="flex justify-center items-center mb-4 sm:mb-6">
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32">
+              <div className="absolute -inset-4 rounded-full bg-white/50 blur-lg"></div>
+              <Image
+                src="/voyabear-mascot.png"
+                alt="VoyaBear Mascot"
+                width={128}
+                height={128}
+                className="animate-float relative z-10"
+              />
+              <div className="absolute -bottom-2 w-full h-4 bg-black/10 blur-md rounded-full"></div>
             </div>
-            <LanguageSwitcher />
           </div>
 
-          {!quizStarted ? (
-            // Compact landing page optimized for mobile
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="relative"
-            >
-              {/* Main card - much more compact */}
-              <motion.div
-                initial={{ y: 10 }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="bg-white/10 backdrop-blur-md rounded-3xl overflow-hidden shadow-xl border border-white/20"
-              >
-                {/* Top section with image and headline */}
-                <div className="relative">
-                  {/* Background image */}
-                  <div className="relative h-48 overflow-hidden rounded-t-3xl">
-                    <Image
-                      src="/travel-collage-gen-z.png"
-                      alt="Travel collage"
-                      fill
-                      className="object-cover brightness-75"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-purple-500/30 to-pink-500/70" />
-                  </div>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-3 sm:mb-4 relative text-shadow">
+            <span className="gradient-text glow-text">Find Your Travel Vibe</span>
+            <span className="absolute -top-6 right-1/4 text-voyabear-primary opacity-20 text-5xl sm:text-7xl animate-float-delayed">
+              ✈️
+            </span>
+            <span className="absolute top-1/2 left-1/4 text-voyabear-secondary opacity-10 text-4xl sm:text-5xl animate-float">
+              🧭
+            </span>
+          </h1>
 
-                  {/* Overlay content */}
-                  <div className="absolute inset-0 flex flex-col justify-between p-4">
-                    {/* Top hashtags */}
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      <div className="bg-purple-600/80 backdrop-blur-sm text-white px-3 py-1 rounded-full text-center text-sm font-medium shadow-md">
-                        #WanderlustVibes
-                      </div>
-                      <div className="bg-pink-500/80 backdrop-blur-sm text-white px-3 py-1 rounded-full text-center text-sm font-medium shadow-md">
-                        #TravelTok
-                      </div>
-                    </div>
+          <p className="text-base sm:text-lg text-gray-700 mb-4 sm:mb-6 max-w-2xl mx-auto">
+            6 quick Qs. One epic travel profile. Way more fun than your horoscope. 😎
+          </p>
 
-                    {/* Center title */}
-                    <div className="text-center">
-                      <h1 className="text-white font-bold text-2xl md:text-3xl drop-shadow-md">
-                        {language === "zh" ? "找到你的旅行美学" : "Find Your Travel Aesthetic"}
-                      </h1>
-                      <p className="text-white text-sm md:text-base mt-1 drop-shadow-md">
-                        {language === "zh" ? "1分钟测验 · 发现你的旅行风格" : "1-min quiz · Discover your travel style"}
-                      </p>
-                    </div>
+          <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white shadow-md text-voyabear-primary text-xs sm:text-sm font-medium mb-6 sm:mb-8 border border-voyabear-primary/10">
+            <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 text-voyabear-secondary" />
+            <span>AI that's smarter than your ex</span>
+          </div>
 
-                    {/* Bottom stats */}
-                    <div className="flex justify-center items-center">
-                      <div className="flex -space-x-2 mr-2">
-                        {[...Array(3)].map((_, i) => (
-                          <div key={i} className="w-6 h-6 rounded-full bg-white/30 border border-white/50" />
-                        ))}
-                      </div>
-                      <p className="text-white text-xs">{language === "zh" ? "10,000+ 人已完成" : "10,000+ people"}</p>
-                    </div>
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-10">
+            <div className="flex flex-col items-center group">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 mb-3 sm:mb-4 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-voyabear-primary/20 to-voyabear-secondary/20 rounded-full blur-lg"></div>
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <span className="text-4xl sm:text-5xl animate-float">🧠</span>
                 </div>
+              </div>
+              <h3 className="text-sm sm:text-base font-medium text-voyabear-primary mb-1">Mind-Blowing Insights</h3>
+              <p className="text-xs text-gray-600 text-center max-w-[180px]">Discover your unique travel personality</p>
+            </div>
 
-                {/* Bottom section with CTA */}
-                <div className="p-4 bg-white/20 backdrop-blur-md">
-                  {/* Quick benefits */}
-                  <div className="flex justify-between mb-4">
-                    {[
-                      { emoji: "🌎", text: language === "zh" ? "旅行个性" : "Travel Style" },
-                      { emoji: "📍", text: language === "zh" ? "目的地推荐" : "Top Destinations" },
-                      { emoji: "⏱️", text: language === "zh" ? "仅需1分钟" : "Just 1 Minute" },
-                    ].map((item, i) => (
-                      <div key={i} className="flex flex-col items-center">
-                        <div className="text-xl mb-1">{item.emoji}</div>
-                        <p className="text-white text-xs">{item.text}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* CTA Button - prominent and visible without scrolling */}
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleStartQuiz}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 text-lg relative overflow-hidden group"
-                  >
-                    <span className="relative z-10 flex items-center justify-center">
-                      {language === "zh" ? "开始测验" : "Start Quiz"}
-                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                    <motion.div
-                      className="absolute inset-0 bg-white/10"
-                      animate={{
-                        x: ["100%", "-100%"],
-                      }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Number.POSITIVE_INFINITY,
-                        repeatType: "loop",
-                        ease: "linear",
-                      }}
-                    />
-                  </motion.button>
+            <div className="flex flex-col items-center group">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 mb-3 sm:mb-4 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-voyabear-secondary/20 to-voyabear-tertiary/20 rounded-full blur-lg"></div>
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <span className="text-4xl sm:text-5xl animate-float" style={{ animationDelay: "0.2s" }}>
+                    🗺️
+                  </span>
                 </div>
-              </motion.div>
-            </motion.div>
-          ) : (
-            // Quiz container - only shown when quiz is started
-            <QuizContainer key={resetKey} skipIntro={true} />
-          )}
+              </div>
+              <h3 className="text-sm sm:text-base font-medium text-voyabear-primary mb-1">Dream Destinations</h3>
+              <p className="text-xs text-gray-600 text-center max-w-[180px]">Places that match your travel style</p>
+            </div>
+
+            <div className="flex flex-col items-center group">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 mb-3 sm:mb-4 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-voyabear-tertiary/20 to-voyabear-primary/20 rounded-full blur-lg"></div>
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <span className="text-4xl sm:text-5xl animate-float" style={{ animationDelay: "0.4s" }}>
+                    ⚡
+                  </span>
+                </div>
+              </div>
+              <h3 className="text-sm sm:text-base font-medium text-voyabear-primary mb-1">Your Travel Superpower</h3>
+              <p className="text-xs text-gray-600 text-center max-w-[180px]">What makes you an amazing traveler</p>
+            </div>
+          </div>
         </header>
+
+        <div className="relative z-10">
+          <Suspense fallback={<LoadingQuiz />}>
+            <TravelQuiz />
+          </Suspense>
+        </div>
       </div>
+
+      <OfflineNotice />
     </main>
   )
 }

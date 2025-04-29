@@ -4,65 +4,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    --background: 260 60% 98%;
+    --foreground: 240 20% 20%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 240 20% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
+    --popover-foreground: 240 20% 20%;
+    --primary: 250 90% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 190 95% 50%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 240 20% 96%;
+    --muted-foreground: 240 20% 50%;
+    --accent: 280 80% 60%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 20% 92%;
+    --input: 240 20% 92%;
+    --ring: 250 90% 60%;
     --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
   }
 }
 
@@ -71,24 +32,36 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-voyabear-light text-foreground;
   }
 }
 
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-pink-500;
+  @apply bg-clip-text text-transparent bg-gradient-voyabear;
 }
 
-.glassmorphism {
-  @apply bg-white/10 backdrop-blur-md;
+.bg-gradient-voyabear {
+  @apply bg-gradient-to-r from-voyabear-primary to-voyabear-secondary;
+}
+
+.bg-gradient-voyabear-alt {
+  @apply bg-gradient-to-r from-voyabear-accent to-voyabear-tertiary;
+}
+
+.bg-gradient-voyabear-dark {
+  @apply bg-gradient-to-r from-voyabear-dark to-voyabear-primary;
+}
+
+.bg-gradient-voyabear-neon {
+  @apply bg-gradient-to-r from-voyabear-neon to-voyabear-secondary;
 }
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
 
-.animate-float-slow {
-  animation: float 8s ease-in-out infinite;
+.animate-float-delayed {
+  animation: float 6s ease-in-out 2s infinite;
 }
 
 @keyframes float {
@@ -96,32 +69,109 @@
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
   100% {
     transform: translateY(0px);
   }
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px -5px rgba(124, 58, 237, 0.2), 0 6px 8px -6px rgba(124, 58, 237, 0.1);
 }
 
-.animate-scroll-x {
-  animation: scrollX 30s linear infinite;
-  width: max-content;
+.progress-bar-animation {
+  transition: width 0.5s ease-in-out;
 }
 
-@keyframes scrollX {
-  0% {
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
     transform: translateX(0);
   }
-  100% {
-    transform: translateX(-50%);
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4);
   }
+  70% {
+    box-shadow: 0 0 0 10px rgba(124, 58, 237, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
+  }
+}
+
+.bg-travel-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%237C3AED' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.bg-dots {
+  background-image: radial-gradient(rgba(124, 58, 237, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-confetti {
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%237C3AED' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.text-shadow {
+  text-shadow: 0 2px 10px rgba(124, 58, 237, 0.2);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.bg-grid {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(124, 58, 237, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(124, 58, 237, 0.05) 1px, transparent 1px);
+}
+
+.glow {
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+}
+
+.neon-border {
+  box-shadow: 0 0 5px #06b6d4, 0 0 10px rgba(6, 182, 212, 0.5);
 }

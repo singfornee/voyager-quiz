@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss"
 
-const config = {
+const config: Config = {
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
@@ -10,13 +10,6 @@ const config = {
     "*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -52,38 +45,49 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        voyabear: {
+          primary: "#7C3AED", // Vibrant purple
+          secondary: "#06B6D4", // Cyan
+          tertiary: "#EC4899", // Pink
+          accent: "#8B5CF6", // Lighter purple
+          dark: "#5B21B6", // Darker purple
+          neon: "#10B981", // Neon green
+          light: "#F3EAFF", // Very light purple
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      fontFamily: {
-        sans: ["var(--font-poppins)", "system-ui", "sans-serif"],
-        chinese: ["var(--font-noto-sans-tc)", "system-ui", "sans-serif"],
-      },
-      keyframes: {
-        "accordion-down": {
-          from: { height: 0 },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: 0 },
-        },
+      backgroundImage: {
+        "gradient-voyabear": "linear-gradient(to right, #7C3AED, #06B6D4)",
+        "gradient-voyabear-alt": "linear-gradient(to right, #8B5CF6, #EC4899)",
+        "gradient-voyabear-dark": "linear-gradient(to right, #5B21B6, #7C3AED)",
+        "gradient-voyabear-neon": "linear-gradient(to right, #10B981, #06B6D4)",
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        float: "float 6s ease-in-out infinite",
       },
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+}
 
 export default config

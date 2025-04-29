@@ -1,106 +1,143 @@
-// lib/analytics.ts
+"use server"
 
-// Simple analytics service for tracking user interactions
+import { storage } from "./storage"
 
-type EventData = Record<string, any>
-type UserData = Record<string, any>
+// Define analytics event types
+export type AnalyticsEvent =
+  | "quiz_started"
+  | "question_answered"
+  | "quiz_completed"
+  | "profile_viewed"
+  | "profile_shared"
+  | "email_submitted"
 
-class Analytics {
-  private userId: string | null = null
-  private sessionId: string
-  private userData: UserData = {}
-  private sessionStartTime: number = Date.now()
+// Define event data structure
+export interface EventData {
+  timestamp: number
+  sessionId: string
+  questionIndex?: number
+  profileId?: string
+  shareMethod?: string
+  dropoffPoint?: string
+}
 
-  constructor() {
-    this.sessionId = this.generateSessionId()
-    this.setupSessionTracking()
-  }
-
-  private generateSessionId(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-  }
-
-  private setupSessionTracking(): void {
-    // Only run in browser environment
-    if (typeof window === "undefined") return
-
-    // Track session start
-    this.track("session_start", {
-      timestamp: new Date().toISOString(),
-      referrer: document.referrer || "direct",
-      userAgent: navigator.userAgent,
-    })
-
-    // Store session start time
-    this.sessionStartTime = Date.now()
-
-    // Create a named handler function that can be removed later if needed
-    const handleBeforeUnload = () => {
-      this.track("session_end", {
-        timestamp: new Date().toISOString(),
-        sessionDuration: Date.now() - this.getSessionStartTime(),
-      })
-    }
-
-    // Track session end on page unload
-    window.addEventListener("beforeunload", handleBeforeUnload)
-  }
-
-  private getSessionStartTime(): number {
-    return this.sessionStartTime
-  }
-
-  // Track events
-  public track(eventName: string, data: EventData = {}): void {
-    // Combine event data with user and session info
-    const eventData = {
+// Track an event
+export async function trackEvent(event: AnalyticsEvent, data: Omit<EventData, "timestamp">): Promise<void> {
+  try {
+    const eventData: EventData = {
       ...data,
-      eventName,
-      timestamp: new Date().toISOString(),
-      sessionId: this.sessionId,
-      userId: this.userId,
+      timestamp: Date.now(),
     }
 
-    // Log to console for development
-    console.log("Analytics event:", eventData)
+    // Store event in KV
+    const eventKey = `analytics:event:${event}:${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+    await storage.set(eventKey, eventData)
 
-    // Send to our API endpoint
-    if (typeof window !== "undefined") {
-      fetch("/api/analytics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(eventData),
-        // Use keepalive to ensure the request completes even if the page is unloading
-        keepalive: true,
-      }).catch((err) => console.error("Failed to send analytics:", err))
+    // Update counters
+    await incrementCounter(event)
 
-      // Add Google Analytics tracking
-      if (typeof window.gtag === "function") {
-        window.gtag("event", eventName, {
-          ...data,
-          event_category: "quiz",
-          event_label: data.travelerType || "",
-          value: data.timeToComplete ? Math.round(data.timeToComplete) : undefined,
-          non_interaction: eventName === "page_view",
-        })
-      } else {
-        console.warn("Google Analytics not loaded (gtag function not available)")
-      }
+    // For question_answered events, track which question
+    if (event === "question_answered" && data.questionIndex !== undefined) {
+      await incrementCounter(`question_${data.questionIndex}_answered`)
     }
-  }
 
-  // Identify a user
-  public identify(userId: string, userData: UserData = {}): void {
-    this.userId = userId
-    this.userData = { ...this.userData, ...userData }
+    // For profile_shared events, track share method
+    if (event === "profile_shared" && data.shareMethod) {
+      await incrementCounter(`share_method_${data.shareMethod}`)
+    }
 
-    // Track the identify event
-    this.track("user_identify", {
-      ...userData,
-      timestamp: new Date().toISOString(),
-    })
+    console.log(`Analytics event tracked: ${event}`, eventData)
+  } catch (error) {
+    console.error("Error tracking analytics event:", error)
   }
 }
 
-// Create a singleton instance
-export const analytics = new Analytics()
+// Increment a counter
+async function incrementCounter(key: string): Promise<void> {
+  try {
+    const counterKey = `analytics:counter:${key}`
+    const currentValue = (await storage.get<number>(counterKey)) || 0
+    await storage.set(counterKey, currentValue + 1)
+  } catch (error) {
+    console.error(`Error incrementing counter ${key}:`, error)
+  }
+}
+
+// Get a counter value
+export async function getCounter(key: string): Promise<number> {
+  try {
+    const counterKey = `analytics:counter:${key}`
+    return (await storage.get<number>(counterKey)) || 0
+  } catch (error) {
+    console.error(`Error getting counter ${key}:`, error)
+    return 0
+  }
+}
+
+// Get conversion rates
+export async function getConversionRates(): Promise<Record<string, number>> {
+  const quizStarted = await getCounter("quiz_started")
+  const quizCompleted = await getCounter("quiz_completed")
+  const profileViewed = await getCounter("profile_viewed")
+  const profileShared = await getCounter("profile_shared")
+  const emailSubmitted = await getCounter("email_submitted")
+
+  return {
+    completionRate: quizStarted ? (quizCompleted / quizStarted) * 100 : 0,
+    shareRate: profileViewed ? (profileShared / profileViewed) * 100 : 0,
+    emailConversionRate: profileViewed ? (emailSubmitted / profileViewed) * 100 : 0,
+    overallConversionRate: quizStarted ? (emailSubmitted / quizStarted) * 100 : 0,
+  }
+}
+
+// Get question drop-off rates
+export async function getQuestionDropoffRates(): Promise<Record<number, number>> {
+  const dropoffRates: Record<number, number> = {}
+  const quizStarted = await getCounter("quiz_started")
+
+  if (!quizStarted) return dropoffRates
+
+  for (let i = 0; i < 6; i++) {
+    const answered = await getCounter(`question_${i}_answered`)
+    const nextAnswered = (await getCounter(`question_${i + 1}_answered`)) || 0
+
+    if (i === 0) {
+      // First question drop-off (from quiz start)
+      dropoffRates[i] = ((quizStarted - answered) / quizStarted) * 100
+    } else if (i < 5) {
+      // Middle questions drop-off
+      const prevAnswered = await getCounter(`question_${i - 1}_answered`)
+      if (prevAnswered) {
+        dropoffRates[i] = ((prevAnswered - answered) / prevAnswered) * 100
+      }
+    } else {
+      // Last question to completion drop-off
+      dropoffRates[i] = ((answered - (await getCounter("quiz_completed"))) / answered) * 100
+    }
+  }
+
+  return dropoffRates
+}
+
+// Get share method distribution
+export async function getShareMethodDistribution(): Promise<Record<string, number>> {
+  const methods = ["facebook", "twitter", "linkedin", "email", "copy", "download"]
+  const distribution: Record<string, number> = {}
+  const totalShares = await getCounter("profile_shared")
+
+  if (!totalShares) return distribution
+
+  for (const method of methods) {
+    const count = await getCounter(`share_method_${method}`)
+    distribution[method] = totalShares ? (count / totalShares) * 100 : 0
+  }
+
+  return distribution
+}
+
+// Reset all analytics (for testing)
+export async function resetAnalytics(): Promise<void> {
+  // This would be implemented with proper authentication in production
+  // For now, just a placeholder
+  console.warn("Analytics reset functionality would require authentication")
+}
