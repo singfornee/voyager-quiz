@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import LanguageSwitcher from "@/components/language-switcher"
 
-// Update the component to remove the language switcher since we'll use the one in the page content
 export default function SiteHeader() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm shadow-sm">
@@ -14,6 +14,8 @@ export default function SiteHeader() {
           </div>
           <span className="font-bold text-voyabear-primary text-lg hidden sm:inline-block">VoyaBear</span>
         </Link>
+
+        <LanguageSwitcher />
       </div>
     </header>
   )
