@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type React from "react"
 import "./globals.css"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
@@ -6,8 +6,6 @@ import { ThemeProvider } from "@/components/theme-provider"
 import ServiceWorkerRegister from "@/components/service-worker-register"
 import GoogleAnalytics from "@/components/google-analytics"
 import { Suspense } from "react"
-import { TranslationProvider } from "@/lib/i18n"
-import SiteHeader from "@/components/site-header"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -31,18 +29,13 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: {
-  children: ReactNode
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <TranslationProvider>
-            <SiteHeader />
-            <div className="pt-12">
-              <Suspense>{children}</Suspense>
-            </div>
-          </TranslationProvider>
+          <Suspense>{children}</Suspense>
         </ThemeProvider>
         <ServiceWorkerRegister />
         <GoogleAnalytics />

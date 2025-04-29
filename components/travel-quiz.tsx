@@ -11,19 +11,94 @@ import { generateProfile } from "@/lib/generate-profile"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import { analyticsClient, getSessionId } from "@/lib/analytics-client"
+// Add import for trackEvent
 import { trackEvent } from "@/lib/analytics"
 import { trackQuizInteraction, trackConversion } from "@/lib/ga-utils"
 import SignupModal from "./signup-modal"
 
-// Import translations
-import { getQuizTranslations } from "@/lib/translations"
+// Restored original questions with full descriptive text
+const questions = [
+  {
+    question: "Which of the following would you choose?",
+    options: [
+      "🌴 Leave me under a palm tree with no schedule",
+      "🗺️ Get me lost in side streets and hidden trails",
+      "🎟️ Museum hopping, guided tours, history deep-dives",
+      "🏙️ Luxury stays, fine dining, rooftop sunsets",
+    ],
+    emoji: "🤔",
+    illustration: "/travel-illustrations/map.png",
+  },
+  {
+    question: "First 24 hours in a new city — what's your move?",
+    options: [
+      "🍜 Hunt for the best hole-in-the-wall local food",
+      "🧭 Drop the bags, walk 10,000 steps without a plan",
+      "🎟️ Stack my day with top-rated attractions",
+      "🛏️ Order room service and soak in the view",
+    ],
+    emoji: "🕒",
+    illustration: "/travel-illustrations/suitcase.png",
+  },
+  {
+    question: "Which travel trophy would you brag about?",
+    options: [
+      "🌋 Summited a volcano or climbed a mountain",
+      "🐬 Swam with wild dolphins or snorkeled a reef",
+      "🎭 Joined a once-in-a-lifetime local festival or sacred ceremony",
+      "🏰 Stayed overnight in a medieval castle or hidden historic village",
+    ],
+    emoji: "🏆",
+    illustration: "/travel-illustrations/passport.png",
+  },
+  {
+    question: "If you could put one thing into your magical backpack, what would it be?",
+    options: [
+      "🎧 Noise-canceling headphones — to stay in my own world when needed",
+      "🥾 Trail shoes — to follow wherever the wild paths lead",
+      "📸 Endless camera roll storage — every hidden moment captured",
+      "📅 A perfectly crafted travel plan — ready for any twist and turn",
+    ],
+    emoji: "🎒",
+    illustration: "/travel-illustrations/backpack.png",
+  },
+  {
+    question: "You win $1,000 to spend on your trip. Where's it going?",
+    options: [
+      "🍽️ On tasting menus, street food crawls, and night markets",
+      "🏖️ Private beaches, sunset cruises, and tropical escapes",
+      "🛍️ Local boutiques, handmade crafts, and once-in-a-lifetime souvenirs",
+      "🏞️ Adventure tours — hiking, rafting, zip-lining, you name it",
+    ],
+    emoji: "💰",
+    illustration: "/travel-illustrations/world.png",
+  },
+  {
+    question: "Last night of the trip — what's the vibe?",
+    options: [
+      "🧘 Spa day or slow beach sunset — total recharge",
+      "🚀 One last crazy adventure — night hikes, secret boat rides, no regrets",
+      "🎨 Cultural night — traditional performance, night market, or art crawl",
+      "🏙️ Dress up and toast the trip with rooftop cocktails and skyline views",
+    ],
+    emoji: "🌙",
+    illustration: "/travel-illustrations/camera.png",
+  },
+  // Additional question from the screenshot
+  {
+    question: "You're writing your travel memoir. What's the title?",
+    options: [
+      "The Art of Getting Wonderfully Lost",
+      "No Map Needed: Finding Friends Everywhere",
+      "First Class All the Way",
+      "The Unplanned Itinerary",
+    ],
+    emoji: "📚",
+    illustration: "/travel-illustrations/map.png",
+  },
+]
 
-// Define props interface
-interface TravelQuizProps {
-  language: "en" | "zh-TW"
-}
-
-export default function TravelQuiz({ language }: TravelQuizProps) {
+export default function TravelQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<number[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -35,20 +110,14 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
   const [sessionId, setSessionId] = useState<string>("")
   const [showSignupModal, setShowSignupModal] = useState(false)
 
-  // Get translations based on language
-  const t = getQuizTranslations(language)
-
-  // Use the translated questions
-  const questions = t.questions
-
   // Generate a session ID on component mount
   useEffect(() => {
     const sid = getSessionId()
     setSessionId(sid)
 
     // Track quiz started event
-    analyticsClient.trackEvent("quiz_started", { sessionId: sid, language })
-  }, [language])
+    analyticsClient.trackEvent("quiz_started", { sessionId: sid })
+  }, [])
 
   // Update the handleOptionSelect function to track option selection
   const handleOptionSelect = (optionIndex: number) => {
@@ -60,7 +129,6 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
       question: questions[currentQuestion].question,
       option: questions[currentQuestion].options[optionIndex],
       option_index: optionIndex,
-      language,
     })
 
     // Add haptic feedback if available
@@ -81,14 +149,12 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
     analyticsClient.trackEvent("question_answered", {
       sessionId,
       questionIndex: currentQuestion,
-      language,
     })
 
     // Track in Google Analytics
     trackQuizInteraction(currentQuestion + 1, "answer_question", {
       question_index: currentQuestion,
       selected_option: selectedOption,
-      language,
     })
 
     if (currentQuestion < questions.length - 1) {
@@ -100,7 +166,6 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
         // Track next question view in Google Analytics
         trackQuizInteraction(currentQuestion + 2, "view_question", {
           question: questions[currentQuestion + 1].question,
-          language,
         })
       }, 300)
     } else {
@@ -111,18 +176,16 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
       // Track quiz completion in Google Analytics
       trackConversion("quiz_completed", {
         answers: newAnswers.join(","),
-        language,
       })
 
       try {
         console.log(`Submitting final answers: ${newAnswers.join(", ")}`)
-        const profileId = await generateProfile(newAnswers, language)
+        const profileId = await generateProfile(newAnswers)
 
         // Track quiz completed event
         analyticsClient.trackEvent("quiz_completed", {
           sessionId,
           profileId,
-          language,
         })
 
         // Track profile generation in Google Analytics
@@ -139,7 +202,6 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
           sessionId,
           questionIndex: currentQuestion,
           dropoffPoint: "error_generating_profile",
-          language,
         })
 
         // Track error in Google Analytics
@@ -151,7 +213,7 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
           true,
         )
 
-        alert(t.errorMessage)
+        alert("Oops! Our AI had a brain freeze. Try again or contact our tech wizards for help.")
       }
     }
   }
@@ -166,29 +228,21 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
           answers,
           timestamp: new Date().getTime(),
           sessionId,
-          language,
         }),
       )
     }
-  }, [answers, currentQuestion, sessionId, language])
+  }, [answers, currentQuestion, sessionId])
 
   // Load saved progress on initial load
   useEffect(() => {
     const savedProgress = localStorage.getItem("voyabear_quiz_progress")
     if (savedProgress) {
       try {
-        const {
-          currentQuestion,
-          answers,
-          timestamp,
-          sessionId: savedSessionId,
-          language: savedLanguage,
-        } = JSON.parse(savedProgress)
-        // Only restore if less than 24 hours old and same language
+        const { currentQuestion, answers, timestamp, sessionId: savedSessionId } = JSON.parse(savedProgress)
+        // Only restore if less than 24 hours old
         const isRecent = new Date().getTime() - timestamp < 24 * 60 * 60 * 1000
-        const isSameLanguage = savedLanguage === language
 
-        if (isRecent && isSameLanguage && answers.length > 0 && currentQuestion < questions.length) {
+        if (isRecent && answers.length > 0 && currentQuestion < questions.length) {
           setCurrentQuestion(currentQuestion)
           setAnswers(answers)
           if (savedSessionId) {
@@ -203,7 +257,7 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
         localStorage.removeItem("voyabear_quiz_progress")
       }
     }
-  }, [language, questions.length])
+  }, [])
 
   // Touch event handlers for swipe
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -241,6 +295,15 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
 
   const progress = (currentQuestion / questions.length) * 100
 
+  // Fun progress messages
+  const getProgressMessage = () => {
+    if (progress < 20) return "Just getting started!"
+    if (progress < 40) return "You're crushing it!"
+    if (progress < 60) return "Halfway there!"
+    if (progress < 80) return "Almost done!"
+    return "Final question!"
+  }
+
   // Animation variants based on swipe direction
   const variants = {
     enter: (direction: string | null) => ({
@@ -264,9 +327,7 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
           <span className="bg-white/70 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
             {currentQuestion + 1}/{questions.length}
           </span>
-          <span className="bg-white/70 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-            {t.progressMessages[Math.min(Math.floor(progress / 20), 4)]}
-          </span>
+          <span className="bg-white/70 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">{getProgressMessage()}</span>
         </div>
         <div className="h-3 bg-white/50 backdrop-blur-sm rounded-full overflow-hidden shadow-sm">
           <div className="h-full bg-gradient-voyabear progress-bar-animation" style={{ width: `${progress}%` }}></div>
@@ -298,6 +359,7 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
                 className="animate-float"
               />
             </div>
+            {/* Add priority to important images */}
 
             <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
               {questions[currentQuestion].question}
@@ -345,30 +407,30 @@ export default function TravelQuiz({ language }: TravelQuizProps) {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    {t.analyzing}
+                    Analyzing...
                   </>
                 ) : currentQuestion === questions.length - 1 ? (
                   <>
-                    {t.showResults}
+                    Show My Results
                     <span className="ml-2">✨</span>
                   </>
                 ) : (
                   <>
-                    {t.next}
+                    Next
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
               </Button>
             </div>
 
-            {currentQuestion > 0 && <p className="text-xs text-gray-500 text-center mt-3">{t.swipeRight}</p>}
+            {currentQuestion > 0 && <p className="text-xs text-gray-500 text-center mt-3">Swipe right to go back</p>}
             {selectedOption !== null && currentQuestion < questions.length - 1 && (
-              <p className="text-xs text-gray-500 text-center mt-1">{t.swipeLeft}</p>
+              <p className="text-xs text-gray-500 text-center mt-1">Swipe left to continue</p>
             )}
           </Card>
         </motion.div>
       </AnimatePresence>
-      {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} profileType="" language={language} />}
+      {showSignupModal && <SignupModal onClose={() => setShowSignupModal(false)} profileType="" />}
     </div>
   )
 }

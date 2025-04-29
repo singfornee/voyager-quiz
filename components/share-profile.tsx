@@ -12,35 +12,12 @@ interface ShareProfileProps {
   profileId: string
   profileName: string
   profileData: ProfileData
-  language: "en" | "zh-TW"
 }
 
-// Translation content
-const translations = {
-  en: {
-    shareText: 'I\'m a "{0}"! {1} and my travel superpower is {2}. #VoyaBear',
-    copyLink: "Copy Link Only",
-    copyText: "Copy Text & Link",
-    copied: "Copied!",
-    sharePrompt: "Share your results and challenge your friends to take the quiz!",
-    shareToAnyApp: "Share to Any App",
-  },
-  "zh-TW": {
-    shareText: "我是一個「{0}」！{1}，我的旅行超能力是{2}。#VoyaBear",
-    copyLink: "僅複製連結",
-    copyText: "複製文字和連結",
-    copied: "已複製！",
-    sharePrompt: "分享您的結果，並挑戰您的朋友也來測試！",
-    shareToAnyApp: "分享到任何應用",
-  },
-}
-
-export default function ShareProfile({ profileId, profileName, profileData, language = "en" }: ShareProfileProps) {
+export default function ShareProfile({ profileId, profileName, profileData }: ShareProfileProps) {
   const [copied, setCopied] = useState(false)
   const [activeTab, setActiveTab] = useState<"social" | "copy">("social")
   const [shareError, setShareError] = useState<string | null>(null)
-
-  const t = translations[language]
 
   // Get the full URL to share - ensure we use absolute URLs
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://voyabear.com"
@@ -69,11 +46,9 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
       : profileData.superpower.toLowerCase()
     : ""
 
-  // Format the share text with the correct language
-  const shareText = t.shareText
-    .replace("{0}", profileName)
-    .replace("{1}", trait ? (language === "en" ? `I'm ${trait}` : `我是${trait}`) : "")
-    .replace("{2}", superpower)
+  const shareText = `${shareEmoji} I'm a "${profileName}"! ${
+    trait ? `I'm ${trait}` : ""
+  } and my travel superpower is ${superpower}. #VoyaBear`
 
   // Handle copy link
   const handleCopyLink = () => {
@@ -87,14 +62,12 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
         sessionId: getSessionId(),
         profileId,
         shareMethod: "copy",
-        language,
       })
 
       // Track in Google Analytics
       trackEvent("share", "profile_sharing", "copy_link", undefined, false, {
         profile_id: profileId,
         profile_type: profileName,
-        language,
       })
 
       setTimeout(() => setCopied(false), 2000)
@@ -116,7 +89,6 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
         sessionId: getSessionId(),
         profileId,
         shareMethod: "copy_text",
-        language,
       })
 
       setTimeout(() => setCopied(false), 2000)
@@ -167,7 +139,6 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
         sessionId: getSessionId(),
         profileId,
         shareMethod: "native",
-        language,
       })
     } catch (error) {
       console.error("Error sharing:", error)
@@ -197,14 +168,12 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
             sessionId: getSessionId(),
             profileId,
             shareMethod: "facebook",
-            language,
           })
 
           // Track in Google Analytics
           trackEvent("share", "profile_sharing", "facebook", undefined, false, {
             profile_id: profileId,
             profile_type: profileName,
-            language,
           })
         } catch (error) {
           console.error("Error opening Facebook share:", error)
@@ -228,14 +197,12 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
             sessionId: getSessionId(),
             profileId,
             shareMethod: "twitter",
-            language,
           })
 
           // Track in Google Analytics
           trackEvent("share", "profile_sharing", "twitter", undefined, false, {
             profile_id: profileId,
             profile_type: profileName,
-            language,
           })
         } catch (error) {
           console.error("Error opening Twitter share:", error)
@@ -277,14 +244,12 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
             sessionId: getSessionId(),
             profileId,
             shareMethod: "instagram",
-            language,
           })
 
           // Track in Google Analytics
           trackEvent("share", "profile_sharing", "instagram", undefined, false, {
             profile_id: profileId,
             profile_type: profileName,
-            language,
           })
         } catch (error) {
           console.error("Error with Instagram share:", error)
@@ -326,14 +291,12 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
             sessionId: getSessionId(),
             profileId,
             shareMethod: "whatsapp",
-            language,
           })
 
           // Track in Google Analytics
           trackEvent("share", "profile_sharing", "whatsapp", undefined, false, {
             profile_id: profileId,
             profile_type: profileName,
-            language,
           })
         } catch (error) {
           console.error("Error opening WhatsApp share:", error)
@@ -372,7 +335,7 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
           }`}
           onClick={() => setActiveTab("social")}
         >
-          {language === "zh-TW" ? "分享" : "Share"}
+          Share
         </button>
         <button
           className={`flex-1 py-2 text-sm font-medium ${
@@ -382,7 +345,7 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
           }`}
           onClick={() => setActiveTab("copy")}
         >
-          {language === "zh-TW" ? "複製" : "Copy"}
+          Copy
         </button>
       </div>
 
@@ -399,7 +362,7 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
               onClick={handleNativeShare}
             >
               <Share2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              {t.shareToAnyApp}
+              Share to Any App
             </Button>
           )}
 
@@ -430,12 +393,12 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
             {copied ? (
               <>
                 <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" />
-                <span>{t.copied}</span>
+                <span>Copied!</span>
               </>
             ) : (
               <>
                 <Copy className="h-4 w-4 mr-2" />
-                <span>{t.copyLink}</span>
+                <span>Copy Link Only</span>
               </>
             )}
           </Button>
@@ -448,19 +411,21 @@ export default function ShareProfile({ profileId, profileName, profileData, lang
             {copied ? (
               <>
                 <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" />
-                <span>{t.copied}</span>
+                <span>Copied!</span>
               </>
             ) : (
               <>
                 <Copy className="h-4 w-4 mr-2" />
-                <span>{t.copyText}</span>
+                <span>Copy Text & Link</span>
               </>
             )}
           </Button>
         </div>
       )}
 
-      <p className="text-xs text-center text-gray-500 mt-2">{t.sharePrompt}</p>
+      <p className="text-xs text-center text-gray-500 mt-2">
+        Share your results and challenge your friends to take the quiz!
+      </p>
     </div>
   )
 }

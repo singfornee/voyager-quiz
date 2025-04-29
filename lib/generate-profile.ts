@@ -3,7 +3,6 @@
 import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
 import { storage } from "./storage"
-import type { Language } from "./i18n"
 
 // Map answers to profile types based on the new questions
 // The mapping is now more complex as the options don't directly map to specific types
@@ -25,10 +24,10 @@ function extractJSON(text: string): string {
   return text.trim()
 }
 
-// Add caching for similar answer patterns with language support
-export async function generateProfile(answers: number[], language: Language = "en"): Promise<string> {
-  // Generate a cache key based on answers and language
-  const cacheKey = `profile:cache:${answers.join("")}:${language}`
+// Add caching for similar answer patterns
+export async function generateProfile(answers: number[]): Promise<string> {
+  // Generate a cache key based on answers
+  const cacheKey = `profile:cache:${answers.join("")}`
 
   // Check if we have a cached result
   const cachedProfile = await storage.get<string>(cacheKey)
@@ -143,14 +142,11 @@ export async function generateProfile(answers: number[], language: Language = "e
   // Generate a seed based on the answers to ensure different prompts
   const seed = answers.reduce((acc, val, idx) => acc + val * (idx + 1), 0)
 
-  // Adjust the prompt based on language
-  const promptLanguage = language === "zh-TW" ? "in Traditional Mandarin Chinese (zh-TW)" : "in English"
-
   // Generate profile using OpenAI
   const prompt = `
-  Create a fun travel personality profile ${promptLanguage} based on these quiz answers:
+  Create a fun travel personality profile based on these quiz answers:
   
-  Answer pattern: ${answers.join("")}
+  Answer pattern: ${answerFingerprint}
   Answer analysis: 
   ${answerAnalysis.join("\n")}
   
@@ -244,7 +240,6 @@ export async function generateProfile(answers: number[], language: Language = "e
       await storage.set(`profile:${profileId}`, {
         ...profileData,
         answers,
-        language, // Store the language used
         createdAt: new Date().toISOString(),
       })
 

@@ -10,6 +10,11 @@ export async function GET() {
     const profileShared = (await getCounter("profile_shared")) || 0
     const emailSubmitted = (await getCounter("email_submitted")) || 0
 
+    // Get email sources
+    const emailFromModal = (await getCounter("email_source_loading_modal")) || 0
+    const emailFromResults = (await getCounter("email_source_results_page")) || 0
+    const emailFromOther = emailSubmitted - (emailFromModal + emailFromResults)
+
     // Get conversion rates
     const conversionRates = await getConversionRates()
 
@@ -27,6 +32,11 @@ export async function GET() {
         profileShared,
         emailSubmitted,
       },
+      emailSources: {
+        modal: emailFromModal,
+        results: emailFromResults,
+        other: emailFromOther > 0 ? emailFromOther : 0,
+      },
       conversionRates,
       dropoffRates,
       shareMethodDistribution,
@@ -41,6 +51,11 @@ export async function GET() {
         profileViewed: 0,
         profileShared: 0,
         emailSubmitted: 0,
+      },
+      emailSources: {
+        modal: 0,
+        results: 0,
+        other: 0,
       },
       conversionRates: {
         completionRate: 0,

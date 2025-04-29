@@ -21,6 +21,11 @@ interface AnalyticsData {
   }
   dropoffRates: Record<number, number>
   shareMethodDistribution: Record<string, number>
+  emailSources: {
+    modal: number
+    results: number
+    other: number
+  }
 }
 
 export default function AnalyticsDashboard() {
@@ -190,6 +195,27 @@ export default function AnalyticsDashboard() {
               <p className={`text-sm ${getConversionColor(data?.conversionRates?.emailConversionRate)}`}>
                 {formatPercent(data?.conversionRates?.emailConversionRate)} conversion
               </p>
+            </Card>
+
+            <Card className="p-4 bg-white shadow-sm border-0">
+              <div className="flex items-center space-x-2 mb-3">
+                <Mail className="h-5 w-5 text-voyabear-tertiary" />
+                <h3 className="font-medium">Email Sources</h3>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Popup Modal:</span>
+                  <span className="font-semibold">{data?.emailSources?.modal || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Results Page:</span>
+                  <span className="font-semibold">{data?.emailSources?.results || 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Other Sources:</span>
+                  <span className="font-semibold">{data?.emailSources?.other || 0}</span>
+                </div>
+              </div>
             </Card>
           </div>
 

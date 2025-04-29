@@ -31,6 +31,13 @@ export async function trackServerEvent(event: string, data: any): Promise<void> 
       const currentShareCount = (await storage.get<number>(shareMethodKey)) || 0
       await storage.set(shareMethodKey, currentShareCount + 1)
     }
+
+    // If this is an email_submitted event, track the source
+    if (event === "email_submitted" && data?.source) {
+      const sourceKey = `analytics:counter:email_source_${data.source}`
+      const currentSourceCount = (await storage.get<number>(sourceKey)) || 0
+      await storage.set(sourceKey, currentSourceCount + 1)
+    }
   } catch (error) {
     console.error("Error tracking server event:", error)
   }
