@@ -370,7 +370,7 @@ export default function TravelQuiz() {
                 <Button
                   key={index}
                   variant="outline"
-                  className={`w-full justify-start text-left p-3 sm:p-4 h-auto min-h-[3rem] ${
+                  className={`w-full justify-start text-left p-4 sm:p-4 h-auto min-h-[3.5rem] ${
                     selectedOption === index
                       ? "border-voyabear-primary bg-voyabear-light text-voyabear-primary shadow-sm"
                       : "border border-gray-200 hover:border-voyabear-primary hover:bg-voyabear-light/30 hover:text-voyabear-primary"
@@ -388,7 +388,7 @@ export default function TravelQuiz() {
                     >
                       {selectedOption === index ? <Check className="h-3 w-3" /> : String.fromCharCode(65 + index)}
                     </span>
-                    <span className="flex-grow text-xs sm:text-sm md:text-base break-words leading-tight sm:leading-normal whitespace-normal">
+                    <span className="flex-grow text-sm sm:text-base md:text-lg break-words leading-tight sm:leading-normal whitespace-normal">
                       {option}
                     </span>
                   </div>
