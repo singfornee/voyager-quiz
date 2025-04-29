@@ -11,6 +11,9 @@ import { generateProfile } from "@/lib/generate-profile"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import { analyticsClient, getSessionId } from "@/lib/analytics-client"
+// Add import for trackEvent
+import { trackEvent } from "@/lib/analytics"
+import { trackQuizInteraction, trackConversion } from "@/lib/ga-utils"
 
 // Restored original questions with full descriptive text
 const questions = [
@@ -114,9 +117,17 @@ export default function TravelQuiz() {
     analyticsClient.trackEvent("quiz_started", { sessionId: sid })
   }, [])
 
+  // Update the handleOptionSelect function to track option selection
   const handleOptionSelect = (optionIndex: number) => {
     setSelectedOption(optionIndex)
     console.log(`Selected option ${optionIndex} for question ${currentQuestion}`)
+
+    // Track option selection in Google Analytics
+    trackQuizInteraction(currentQuestion + 1, "select_option", {
+      question: questions[currentQuestion].question,
+      option: questions[currentQuestion].options[optionIndex],
+      option_index: optionIndex,
+    })
 
     // Add haptic feedback if available
     if (navigator.vibrate) {
@@ -124,6 +135,7 @@ export default function TravelQuiz() {
     }
   }
 
+  // Update the handleNextQuestion function to track question navigation
   const handleNextQuestion = async () => {
     if (selectedOption === null) return
 
@@ -137,15 +149,32 @@ export default function TravelQuiz() {
       questionIndex: currentQuestion,
     })
 
+    // Track in Google Analytics
+    trackQuizInteraction(currentQuestion + 1, "answer_question", {
+      question_index: currentQuestion,
+      selected_option: selectedOption,
+    })
+
     if (currentQuestion < questions.length - 1) {
       setSelectedOption(null)
       setSwipeDirection("left")
       setTimeout(() => {
         setCurrentQuestion(currentQuestion + 1)
+
+        // Track next question view in Google Analytics
+        trackQuizInteraction(currentQuestion + 2, "view_question", {
+          question: questions[currentQuestion + 1].question,
+        })
       }, 300)
     } else {
       // All questions answered, generate profile
       setIsSubmitting(true)
+
+      // Track quiz completion in Google Analytics
+      trackConversion("quiz_completed", {
+        answers: newAnswers.join(","),
+      })
+
       try {
         console.log(`Submitting final answers: ${newAnswers.join(", ")}`)
         const profileId = await generateProfile(newAnswers)
@@ -155,6 +184,9 @@ export default function TravelQuiz() {
           sessionId,
           profileId,
         })
+
+        // Track profile generation in Google Analytics
+        trackEvent("generate_profile", "quiz_completion", profileId)
 
         router.push(`/results/${profileId}`)
       } catch (error) {
@@ -167,6 +199,15 @@ export default function TravelQuiz() {
           questionIndex: currentQuestion,
           dropoffPoint: "error_generating_profile",
         })
+
+        // Track error in Google Analytics
+        trackEvent(
+          "error",
+          "quiz_error",
+          `Profile generation error: ${error instanceof Error ? error.message : String(error)}`,
+          undefined,
+          true,
+        )
 
         alert("Oops! Our AI had a brain freeze. Try again or contact our tech wizards for help.")
       }

@@ -7,6 +7,9 @@ import type { ProfileData } from "@/lib/storage"
 import { analyticsClient, getSessionId } from "@/lib/analytics-client"
 import { Card } from "@/components/ui/card"
 
+// Add import for trackEvent
+import { trackEvent } from "@/lib/ga-utils"
+
 interface ShareProfileProps {
   profileId: string
   profileName: string
@@ -50,6 +53,7 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
     trait ? `I'm ${trait}` : ""
   } and my travel superpower is ${superpower}. #VoyaBear`
 
+  // Update the handleCopyLink function
   const handleCopyLink = () => {
     try {
       navigator.clipboard.writeText(shareUrl)
@@ -61,6 +65,18 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
         sessionId: getSessionId(),
         profileId,
         shareMethod: "copy",
+      })
+
+      // Track in Google Analytics
+      trackEvent("share", "profile_sharing", "copy_link", undefined, false, {
+        profile_id: profileId,
+        profile_type: profileName,
+      })
+
+      // Track in Google Analytics
+      trackEvent("share", "profile_sharing", "Copy link", undefined, false, {
+        profile_id: profileId,
+        share_method: "copy",
       })
 
       setTimeout(() => setCopied(false), 2000)
@@ -144,6 +160,8 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
   }
 
   const shareLinks = [
+    // Update other sharing methods similarly
+    // For example, update the Facebook share action:
     {
       name: "Facebook",
       icon: <Facebook className="h-4 w-4 sm:h-5 sm:w-5" />,
@@ -163,6 +181,18 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
             sessionId: getSessionId(),
             profileId,
             shareMethod: "facebook",
+          })
+
+          // Track in Google Analytics
+          trackEvent("share", "profile_sharing", "facebook", undefined, false, {
+            profile_id: profileId,
+            profile_type: profileName,
+          })
+
+          // Track in Google Analytics
+          trackEvent("share", "profile_sharing", "Facebook", undefined, false, {
+            profile_id: profileId,
+            share_method: "facebook",
           })
         } catch (error) {
           console.error("Error opening Facebook share:", error)
@@ -188,6 +218,12 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
             sessionId: getSessionId(),
             profileId,
             shareMethod: "twitter",
+          })
+
+          // Track in Google Analytics
+          trackEvent("share", "profile_sharing", "twitter", undefined, false, {
+            profile_id: profileId,
+            profile_type: profileName,
           })
         } catch (error) {
           console.error("Error opening Twitter share:", error)
@@ -229,6 +265,12 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
             sessionId: getSessionId(),
             profileId,
             shareMethod: "instagram",
+          })
+
+          // Track in Google Analytics
+          trackEvent("share", "profile_sharing", "instagram", undefined, false, {
+            profile_id: profileId,
+            profile_type: profileName,
           })
         } catch (error) {
           console.error("Error with Instagram share:", error)
@@ -272,6 +314,12 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
             sessionId: getSessionId(),
             profileId,
             shareMethod: "whatsapp",
+          })
+
+          // Track in Google Analytics
+          trackEvent("share", "profile_sharing", "whatsapp", undefined, false, {
+            profile_id: profileId,
+            profile_type: profileName,
           })
         } catch (error) {
           console.error("Error opening WhatsApp share:", error)

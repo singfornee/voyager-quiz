@@ -21,34 +21,23 @@ export interface EventData {
   dropoffPoint?: string
 }
 
-// Track an event
-export async function trackEvent(event: AnalyticsEvent, data: Omit<EventData, "timestamp">): Promise<void> {
-  try {
-    const eventData: EventData = {
-      ...data,
-      timestamp: Date.now(),
-    }
-
-    // Store event in KV
-    const eventKey = `analytics:event:${event}:${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
-    await storage.set(eventKey, eventData)
-
-    // Update counters
-    await incrementCounter(event)
-
-    // For question_answered events, track which question
-    if (event === "question_answered" && data.questionIndex !== undefined) {
-      await incrementCounter(`question_${data.questionIndex}_answered`)
-    }
-
-    // For profile_shared events, track share method
-    if (event === "profile_shared" && data.shareMethod) {
-      await incrementCounter(`share_method_${data.shareMethod}`)
-    }
-
-    console.log(`Analytics event tracked: ${event}`, eventData)
-  } catch (error) {
-    console.error("Error tracking analytics event:", error)
+// Google Analytics event tracking
+export const trackEvent = (
+  action: string,
+  category: string,
+  label?: string,
+  value?: number,
+  nonInteraction?: boolean,
+  customDimensions?: Record<string, string | number | boolean>,
+) => {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", action, {
+      event_category: category,
+      event_label: label,
+      value: value,
+      non_interaction: nonInteraction,
+      ...customDimensions,
+    })
   }
 }
 

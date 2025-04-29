@@ -10,6 +10,10 @@ import { subscribeToMailchimp } from "@/lib/mailchimp"
 import { analyticsClient, getSessionId } from "@/lib/analytics-client"
 import Link from "next/link"
 
+// Add import for trackEvent
+import { trackEvent } from "@/lib/analytics"
+import { trackConversion } from "@/lib/ga-utils"
+
 interface MailchimpSignupProps {
   profileType: string
 }
@@ -21,6 +25,7 @@ export default function MailchimpSignup({ profileType }: MailchimpSignupProps) {
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState("")
 
+  // Update the handleSubmit function
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -34,8 +39,28 @@ export default function MailchimpSignup({ profileType }: MailchimpSignupProps) {
       analyticsClient.trackEvent("email_submitted", {
         sessionId: getSessionId(),
       })
+
+      // Track in Google Analytics
+      trackEvent("signup", "email_subscription", "Email submitted", undefined, false, { profile_type: profileType })
+
+      // Track in Google Analytics
+      trackConversion("email_signup", {
+        profile_type: profileType,
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Oops! Try again?")
+
+      // Track error in Google Analytics
+      trackEvent(
+        "error",
+        "email_subscription",
+        `Subscription error: ${err instanceof Error ? err.message : String(err)}`,
+        undefined,
+        true,
+      )
+
+      // Track error in Google Analytics
+      trackEvent("error", "email_signup", err instanceof Error ? err.message : "Unknown error")
     } finally {
       setIsSubmitting(false)
     }
