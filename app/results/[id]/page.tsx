@@ -493,7 +493,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="object-cover"
                         unoptimized={!cityImages[index]?.url}
-                        priority={index < 3} // Prioritize loading the first 3 images
+                        priority={index < 3}
                       />
                     </div>
                     <div className="absolute bottom-0 left-0 p-3 z-20">
