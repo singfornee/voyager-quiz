@@ -493,7 +493,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
               const placeholderUrl = `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(city.name + " " + city.country)}`
 
               // Get the image URL from cityImages or use placeholder
-              const imageUrl = cityImages[index]?.url || placeholderUrl
+              const imageUrl = (cityImages && cityImages[index] && cityImages[index].url) || placeholderUrl
 
               return (
                 <Card key={index} className="overflow-hidden border-0 shadow-md card-hover h-full">

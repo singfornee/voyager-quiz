@@ -459,7 +459,9 @@ export default function AnalyticsDashboard() {
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
-                          {data?.counters?.emailSubmittedBySource?.[source] || 0} ({formatPercent(percentage)})
+                          {(data?.counters?.emailSubmittedBySource && data.counters.emailSubmittedBySource[source]) ||
+                            0}{" "}
+                          ({formatPercent(percentage)})
                         </span>
                       </div>
                     </div>
