@@ -62,9 +62,9 @@
     "nanoid": "latest",
     "@vercel/kv": "latest",
     "crypto": "latest",
+    "framer-motion": "latest",
     "ai": "latest",
-    "@ai-sdk/openai": "latest",
-    "framer-motion": "latest"
+    "@ai-sdk/openai": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

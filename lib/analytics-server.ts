@@ -1,6 +1,7 @@
 "use server"
 
 import { storage } from "./storage"
+import { incrementCounter, incrementCounterWithSource } from "./analytics"
 
 // Server-side analytics tracking
 export async function trackServerEvent(event: string, data: any): Promise<void> {
@@ -13,10 +14,14 @@ export async function trackServerEvent(event: string, data: any): Promise<void> 
       timestamp: Date.now(),
     })
 
-    // Increment the counter for this event type
-    const counterKey = `analytics:counter:${event}`
-    const currentCount = (await storage.get<number>(counterKey)) || 0
-    await storage.set(counterKey, currentCount + 1)
+    // Check if we have a source for email submissions
+    if (event === "email_submitted" && data?.source) {
+      // Increment the counter with source
+      await incrementCounterWithSource(event, data.source)
+    } else {
+      // Increment the counter for this event type
+      await incrementCounter(event)
+    }
 
     // If this is a question_answered event, track the question index
     if (event === "question_answered" && data?.questionIndex !== undefined) {

@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import ServiceWorkerRegister from "@/components/service-worker-register"
 import GoogleAnalytics from "@/components/google-analytics"
 import { Suspense } from "react"
+import { TranslationProvider } from "@/lib/i18n"
+import SiteHeader from "@/components/site-header"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -35,7 +37,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <Suspense>{children}</Suspense>
+          <TranslationProvider>
+            <SiteHeader />
+            <div className="pt-12">
+              <Suspense>{children}</Suspense>
+            </div>
+          </TranslationProvider>
         </ThemeProvider>
         <ServiceWorkerRegister />
         <GoogleAnalytics />

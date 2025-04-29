@@ -12,15 +12,22 @@ interface AnalyticsData {
     profileViewed: number
     profileShared: number
     emailSubmitted: number
+    emailSubmittedBySource: {
+      popup: number
+      resultsPage: number
+    }
   }
   conversionRates: {
     completionRate: number
     shareRate: number
     emailConversionRate: number
+    emailPopupConversionRate: number
+    emailResultsConversionRate: number
     overallConversionRate: number
   }
   dropoffRates: Record<number, number>
   shareMethodDistribution: Record<string, number>
+  emailSourceDistribution: Record<string, number>
 }
 
 export default function AnalyticsDashboard() {
@@ -90,7 +97,7 @@ export default function AnalyticsDashboard() {
     const issues = []
     if (!data || !data.conversionRates) return issues
 
-    const { completionRate, shareRate, emailConversionRate } = data.conversionRates
+    const { completionRate, shareRate, emailConversionRate, emailPopupConversionRate } = data.conversionRates
 
     // Check quiz completion rate
     if (completionRate !== undefined && completionRate < 50) {
@@ -134,6 +141,15 @@ export default function AnalyticsDashboard() {
       })
     }
 
+    // Check popup email conversion
+    if (emailPopupConversionRate !== undefined && emailPopupConversionRate < 20) {
+      issues.push({
+        area: "Popup Email Collection",
+        issue: "Low popup email submission rate",
+        suggestion: "Improve the popup design or messaging to increase conversions",
+      })
+    }
+
     return issues
   }
 
@@ -142,11 +158,12 @@ export default function AnalyticsDashboard() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-5 mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="funnel">Conversion Funnel</TabsTrigger>
           <TabsTrigger value="dropoff">Drop-off Analysis</TabsTrigger>
           <TabsTrigger value="sharing">Sharing Analysis</TabsTrigger>
+          <TabsTrigger value="email">Email Analysis</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -258,6 +275,30 @@ export default function AnalyticsDashboard() {
               <div className="relative pt-1">
                 <div className="flex items-center justify-between mb-2">
                   <div>
+                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-tertiary">
+                      Email Popup Signup
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
+                      {data?.counters?.emailSubmittedBySource?.popup || 0} (
+                      {formatPercent(data?.conversionRates?.emailPopupConversionRate)})
+                    </span>
+                  </div>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div
+                    className="bg-voyabear-tertiary h-3 rounded-full"
+                    style={{
+                      width: `${((data?.counters?.emailSubmittedBySource?.popup || 0) / (data?.counters?.quizCompleted || 1)) * 100}%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="relative pt-1">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
                     <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-primary">
                       Profile Viewed
                     </span>
@@ -306,22 +347,22 @@ export default function AnalyticsDashboard() {
               <div className="relative pt-1">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-primary">
-                      Email Submitted
+                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-tertiary">
+                      Results Page Email
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-semibold inline-block text-voyabear-primary">
-                      {data?.counters?.emailSubmitted || 0} (
-                      {formatPercent(data?.conversionRates?.overallConversionRate)})
+                    <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
+                      {data?.counters?.emailSubmittedBySource?.resultsPage || 0} (
+                      {formatPercent(data?.conversionRates?.emailResultsConversionRate)})
                     </span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
-                    className="bg-voyabear-primary h-3 rounded-full"
+                    className="bg-voyabear-tertiary h-3 rounded-full"
                     style={{
-                      width: `${((data?.counters?.emailSubmitted || 0) / (data?.counters?.quizStarted || 1)) * 100}%`,
+                      width: `${((data?.counters?.emailSubmittedBySource?.resultsPage || 0) / (data?.counters?.profileViewed || 1)) * 100}%`,
                     }}
                   ></div>
                 </div>
@@ -394,26 +435,117 @@ export default function AnalyticsDashboard() {
             </div>
           </Card>
         </TabsContent>
+
+        <TabsContent value="email" className="space-y-4">
+          <Card className="p-6 bg-white shadow-sm border-0">
+            <h3 className="text-lg font-medium mb-4">Email Signup Sources</h3>
+            <div className="grid grid-cols-1 gap-4">
+              {Object.entries(data?.emailSourceDistribution || {}).map(([source, percentage]) => {
+                // Format the source name for display
+                const sourceName =
+                  source === "loading_modal"
+                    ? "Popup Modal"
+                    : source === "results_page"
+                      ? "Results Page"
+                      : source.charAt(0).toUpperCase() + source.slice(1)
+
+                return (
+                  <div key={source} className="relative pt-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-tertiary">
+                          {sourceName}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-semibold inline-block text-voyabear-tertiary">
+                          {data?.counters?.emailSubmittedBySource?.[source] || 0} ({formatPercent(percentage)})
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div className="bg-voyabear-tertiary h-3 rounded-full" style={{ width: `${percentage}%` }}></div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="mt-6">
+              <h4 className="text-md font-medium mb-3">Email Conversion Rates</h4>
+              <div className="space-y-4">
+                <div className="relative pt-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-primary">
+                        Popup Modal Conversion
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span
+                        className={`text-xs font-semibold inline-block ${getConversionColor(data?.conversionRates?.emailPopupConversionRate)}`}
+                      >
+                        {formatPercent(data?.conversionRates?.emailPopupConversionRate)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className={`bg-gradient-voyabear h-3 rounded-full`}
+                      style={{ width: `${Math.min(data?.conversionRates?.emailPopupConversionRate || 0, 100)}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Percentage of users who completed the quiz and submitted their email in the popup
+                  </p>
+                </div>
+
+                <div className="relative pt-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-voyabear-light text-voyabear-primary">
+                        Results Page Conversion
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span
+                        className={`text-xs font-semibold inline-block ${getConversionColor(data?.conversionRates?.emailResultsConversionRate)}`}
+                      >
+                        {formatPercent(data?.conversionRates?.emailResultsConversionRate)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className={`bg-gradient-voyabear h-3 rounded-full`}
+                      style={{ width: `${Math.min(data?.conversionRates?.emailResultsConversionRate || 0, 100)}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Percentage of users who viewed their profile and submitted their email on the results page
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
       </Tabs>
 
-      <Card className="p-6 bg-white shadow-sm border-0">
-        <h3 className="text-lg font-medium mb-4">Analysis & Recommendations</h3>
-        {issues.length > 0 ? (
+      {issues.length > 0 && (
+        <Card className="p-6 bg-white shadow-sm border-0">
+          <h3 className="text-lg font-medium mb-4">Improvement Suggestions</h3>
           <div className="space-y-4">
             {issues.map((issue, index) => (
-              <div key={index} className="border-l-4 border-amber-500 pl-4 py-2">
-                <h4 className="font-medium text-voyabear-primary">{issue.area}</h4>
-                <p className="text-gray-700">{issue.issue}</p>
-                <p className="text-sm text-gray-600 mt-1">
-                  <span className="font-medium">Recommendation:</span> {issue.suggestion}
-                </p>
+              <div key={index} className="bg-amber-50 border border-amber-200 rounded-md p-4">
+                <h4 className="font-medium text-amber-800 mb-1">
+                  {issue.area}: {issue.issue}
+                </h4>
+                <p className="text-amber-700 text-sm">{issue.suggestion}</p>
               </div>
             ))}
           </div>
-        ) : (
-          <p className="text-green-600">No significant issues detected in your conversion funnel!</p>
-        )}
-      </Card>
+        </Card>
+      )}
     </div>
   )
 }

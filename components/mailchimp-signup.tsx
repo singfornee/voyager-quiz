@@ -10,13 +10,21 @@ import { subscribeToMailchimp } from "@/lib/mailchimp"
 import { analyticsClient, getSessionId } from "@/lib/analytics-client"
 import Link from "next/link"
 import { trackConversion } from "@/lib/ga-utils"
+import { getResultsTranslations } from "@/lib/results-translations"
 
-export default function MailchimpSignup({ profileType }: { profileType: string }) {
+interface MailchimpSignupProps {
+  profileType: string
+  language: "en" | "zh-TW"
+}
+
+export default function MailchimpSignup({ profileType, language = "en" }: MailchimpSignupProps) {
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState("")
+
+  const t = getResultsTranslations(language).signupSection
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,12 +39,14 @@ export default function MailchimpSignup({ profileType }: { profileType: string }
       analyticsClient.trackEvent("email_submitted", {
         sessionId: getSessionId(),
         source: "results_page",
+        language,
       })
 
       // Track conversion
       trackConversion("email_signup", {
         profile_type: profileType,
         source: "results_page",
+        language,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Oops! Try again?")
@@ -51,15 +61,15 @@ export default function MailchimpSignup({ profileType }: { profileType: string }
         <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-teal-400 to-blue-400 flex items-center justify-center mb-3 sm:mb-4 shadow-md">
           <CheckCircle2 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
         </div>
-        <h3 className="text-base sm:text-lg font-medium text-voyabear-primary mb-1">You're in!</h3>
-        <p className="text-gray-700 text-sm sm:text-base mb-2">We'll let you know when we launch!</p>
+        <h3 className="text-base sm:text-lg font-medium text-voyabear-primary mb-1">{t.successTitle}</h3>
+        <p className="text-gray-700 text-sm sm:text-base mb-2">{t.successMessage}</p>
         <Link
           href="https://voyagerai.io"
           target="_blank"
           rel="noopener noreferrer"
           className="text-voyabear-primary hover:text-voyabear-dark text-sm flex items-center transition-colors"
         >
-          Learn more at voyagerai.io
+          {language === "zh-TW" ? "在voyagerai.io了解更多" : "Learn more at voyagerai.io"}
           <ExternalLink className="h-3 w-3 ml-1" />
         </Link>
       </div>
@@ -87,21 +97,21 @@ export default function MailchimpSignup({ profileType }: { profileType: string }
             <path d="M5 8.3a9 9 0 0 1 14.5-3.2" />
           </svg>
         </div>
-        <h3 className="text-xl sm:text-2xl font-bold text-voyabear-primary">Get On The List</h3>
+        <h3 className="text-xl sm:text-2xl font-bold text-voyabear-primary">{t.title}</h3>
       </div>
 
-      <p className="text-gray-700 mb-4">We'll send you cool travel stuff. No spam, promise!</p>
+      <p className="text-gray-700 mb-4">{t.subtitle}</p>
 
       <div className="text-center mb-4">
-        <h3 className="text-2xl font-bold text-voyabear-primary mb-1">We're launching soon!</h3>
-        <p className="text-gray-600">Be the first to know when we go live.</p>
+        <h3 className="text-2xl font-bold text-voyabear-primary mb-1">{t.betaTitle}</h3>
+        <p className="text-gray-600">{t.betaSubtitle}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Input
             type="text"
-            placeholder="Your name"
+            placeholder={t.namePlaceholder}
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -111,7 +121,7 @@ export default function MailchimpSignup({ profileType }: { profileType: string }
         <div>
           <Input
             type="email"
-            placeholder="Email (we won't spam you)"
+            placeholder={t.emailPlaceholder}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -129,10 +139,10 @@ export default function MailchimpSignup({ profileType }: { profileType: string }
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Just a sec...
+              {language === "zh-TW" ? "請稍等..." : "Just a sec..."}
             </>
           ) : (
-            "Get Early Access"
+            t.buttonText
           )}
         </Button>
       </form>
@@ -144,7 +154,7 @@ export default function MailchimpSignup({ profileType }: { profileType: string }
           rel="noopener noreferrer"
           className="text-voyabear-primary hover:text-voyabear-dark text-base flex items-center justify-center transition-colors"
         >
-          Learn more at voyagerai.io
+          {language === "zh-TW" ? "在voyagerai.io了解更多" : "Learn more at voyagerai.io"}
           <ExternalLink className="h-4 w-4 ml-1" />
         </Link>
       </div>

@@ -37,6 +37,8 @@ import BackToTop from "@/components/back-to-top"
 import { useEffect, useState } from "react"
 import { analyticsClient, getSessionId } from "@/lib/analytics-client"
 import LoadingResults from "@/components/loading-results"
+import { useTranslation } from "@/lib/i18n"
+import { getResultsTranslations } from "@/lib/results-translations"
 
 // Type for Unsplash image data
 interface UnsplashImageData {
@@ -47,6 +49,9 @@ interface UnsplashImageData {
 }
 
 export default function ResultsPage({ params }: { params: { id: string } }) {
+  const { language } = useTranslation()
+  const t = getResultsTranslations(language)
+
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const [cityImages, setCityImages] = useState<UnsplashImageData[]>([])
   const [loading, setLoading] = useState(true)
@@ -180,12 +185,12 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
           className="inline-flex items-center text-voyabear-primary hover:text-voyabear-dark mb-4 sm:mb-6 transition-colors bg-white/50 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-sm text-sm"
         >
           <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-          Try again?
+          {language === "zh-TW" ? "再試一次？" : "Try again?"}
         </Link>
 
         <header className="text-center mb-6 sm:mb-10 relative">
           <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-5 relative text-shadow">
-            <span className="gradient-text glow-text">Here's Your Travel Type!</span>
+            <span className="gradient-text glow-text">{t.pageTitle}</span>
           </h1>
 
           <div className="inline-block bg-gradient-voyabear text-white px-4 py-2 sm:px-6 sm:py-3 rounded-full text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 shadow-lg glow">
@@ -193,9 +198,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
             {profileData.profileName}
           </div>
 
-          <p className="text-gray-700 max-w-2xl mx-auto text-sm sm:text-base">
-            Our AI figured you out. Scary accurate, right? But in a fun way!
-          </p>
+          <p className="text-gray-700 max-w-2xl mx-auto text-sm sm:text-base">{t.heroText}</p>
         </header>
 
         {/* Profile Traits Section */}
@@ -206,7 +209,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-voyabear flex items-center justify-center mr-3 sm:mr-4 shadow-md">
               <Award className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-semibold text-voyabear-primary">That's So You</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold text-voyabear-primary">{t.personalitySection.title}</h2>
           </div>
 
           <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
@@ -245,7 +248,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
             <div className="card-hover">
               <h3 className="text-base sm:text-lg font-medium text-voyabear-primary mb-2 sm:mb-3 flex items-center">
                 <Heart className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-voyabear-tertiary" />
-                Your Travel Animal
+                {t.personalitySection.animalTitle}
               </h3>
               <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 hover:shadow-md transition-shadow">
                 <p className="text-gray-700 text-sm sm:text-base">
@@ -257,22 +260,22 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
             <div className="card-hover">
               <h3 className="text-base sm:text-lg font-medium text-voyabear-primary mb-2 sm:mb-3 flex items-center">
                 <Users className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-voyabear-accent" />
-                In The Group Chat
+                {t.personalitySection.groupRoleTitle}
               </h3>
               <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 hover:shadow-md transition-shadow">
                 <p className="text-gray-700 text-sm sm:text-base">{profileData.groupRole}</p>
-                <p className="text-xs text-gray-500 mt-2 italic">Every squad needs one!</p>
+                <p className="text-xs text-gray-500 mt-2 italic">{t.personalitySection.groupRoleFooter}</p>
               </Card>
             </div>
 
             <div className="card-hover">
               <h3 className="text-base sm:text-lg font-medium text-voyabear-primary mb-2 sm:mb-3 flex items-center">
                 <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-voyabear-neon" />
-                Special Move
+                {t.personalitySection.superpowerTitle}
               </h3>
               <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 hover:shadow-md transition-shadow">
                 <p className="text-gray-700 text-sm sm:text-base">{profileData.superpower}</p>
-                <p className="text-xs text-gray-500 mt-2 italic">Use it wisely!</p>
+                <p className="text-xs text-gray-500 mt-2 italic">{t.personalitySection.superpowerFooter}</p>
               </Card>
             </div>
           </div>
@@ -306,14 +309,14 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
                 <path d="M15.54 8.46l3.54-3.54" />
               </svg>
             </div>
-            <h2 className="text-xl sm:text-2xl font-semibold text-voyabear-primary">The Real You</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold text-voyabear-primary">{t.mbtiSection.title}</h2>
           </div>
 
           <div className="prose prose-purple max-w-none mb-6 sm:mb-8">
             <div className="bg-voyabear-light/50 p-4 sm:p-6 rounded-xl mb-6 sm:mb-8 shadow-sm hover:shadow-md transition-shadow">
               <h3 className="text-lg sm:text-xl font-medium text-voyabear-primary mb-3 sm:mb-4 flex items-center">
                 <Zap className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-voyabear-secondary" />
-                How You Roll
+                {t.mbtiSection.overviewTitle}
               </h3>
               <p className="text-gray-700 whitespace-pre-line text-sm sm:text-base">
                 {profileData.mbtiAnalysis.overview}
@@ -324,7 +327,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
               <div className="card-hover">
                 <h3 className="text-base sm:text-lg font-medium text-voyabear-primary mb-2 sm:mb-3 flex items-center">
                   <Award className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-voyabear-neon" />
-                  You're Great At
+                  {t.mbtiSection.strengthsTitle}
                 </h3>
                 <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 hover:shadow-md transition-shadow">
                   <ul className="space-y-2 sm:space-y-3">
@@ -343,7 +346,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
               <div className="card-hover">
                 <h3 className="text-base sm:text-lg font-medium text-voyabear-primary mb-2 sm:mb-3 flex items-center">
                   <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-amber-500" />
-                  Watch Out For
+                  {t.mbtiSection.challengesTitle}
                 </h3>
                 <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 hover:shadow-md transition-shadow">
                   <ul className="space-y-2 sm:space-y-3">
@@ -364,7 +367,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
               <div className="card-hover">
                 <h3 className="text-base sm:text-lg font-medium text-voyabear-primary mb-2 sm:mb-3 flex items-center">
                   <Compass className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-voyabear-secondary" />
-                  Your Style
+                  {t.mbtiSection.travelStyleTitle}
                 </h3>
                 <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 h-full hover:shadow-md transition-shadow">
                   {/* Improved bullet points with better styling */}
@@ -387,7 +390,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
               <div className="card-hover">
                 <h3 className="text-base sm:text-lg font-medium text-voyabear-primary mb-2 sm:mb-3 flex items-center">
                   <Users className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-voyabear-primary" />
-                  Travel With These People
+                  {t.mbtiSection.companionsTitle}
                 </h3>
                 <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 h-full hover:shadow-md transition-shadow">
                   {/* Improved bullet points with better styling */}
@@ -410,7 +413,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
               <div className="card-hover">
                 <h3 className="text-base sm:text-lg font-medium text-voyabear-primary mb-2 sm:mb-3 flex items-center">
                   <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-voyabear-tertiary" />
-                  Try This Next Time
+                  {t.mbtiSection.growthTitle}
                 </h3>
                 <Card className="p-3 sm:p-5 border-0 shadow-sm bg-gradient-to-br from-white to-voyabear-light/50 h-full hover:shadow-md transition-shadow">
                   {/* Improved bullet points with better styling */}
@@ -441,12 +444,12 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-voyabear-neon flex items-center justify-center mr-3 sm:mr-4 shadow-md">
               <Plane className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-semibold text-voyabear-primary">Places You'd Love</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold text-voyabear-primary">{t.destinationsSection.title}</h2>
           </div>
 
           <p className="text-gray-700 mb-6 sm:mb-8 flex items-center text-sm sm:text-base">
             <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-voyabear-secondary" />
-            Based on your answers, you should check these spots out. Just saying.
+            {t.destinationsSection.subtitle}
           </p>
 
           {/* Improved grid layout for destinations */}
@@ -455,19 +458,33 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
               // Dynamic icon based on city name or country
               let cityIcon = <MapPin className="h-4 w-4 mr-1 text-voyabear-secondary" />
 
-              if (city.name.toLowerCase().includes("beach") || city.country.toLowerCase().includes("island")) {
+              if (
+                city.name.toLowerCase().includes("beach") ||
+                city.country.toLowerCase().includes("island") ||
+                city.name.includes("海灘") ||
+                city.country.includes("島")
+              ) {
                 cityIcon = <Sun className="h-4 w-4 mr-1 text-voyabear-secondary" />
               } else if (
                 city.name.toLowerCase().includes("york") ||
                 city.name.toLowerCase().includes("tokyo") ||
-                city.name.toLowerCase().includes("london")
+                city.name.toLowerCase().includes("london") ||
+                city.name.includes("東京") ||
+                city.name.includes("倫敦")
               ) {
                 cityIcon = <Briefcase className="h-4 w-4 mr-1 text-voyabear-secondary" />
-              } else if (city.reason.toLowerCase().includes("food") || city.reason.toLowerCase().includes("cuisine")) {
+              } else if (
+                city.reason.toLowerCase().includes("food") ||
+                city.reason.toLowerCase().includes("cuisine") ||
+                city.reason.includes("美食") ||
+                city.reason.includes("料理")
+              ) {
                 cityIcon = <Utensils className="h-4 w-4 mr-1 text-voyabear-secondary" />
               } else if (
                 city.reason.toLowerCase().includes("music") ||
-                city.reason.toLowerCase().includes("festival")
+                city.reason.toLowerCase().includes("festival") ||
+                city.reason.includes("音樂") ||
+                city.reason.includes("節慶")
               ) {
                 cityIcon = <Music className="h-4 w-4 mr-1 text-voyabear-secondary" />
               }
@@ -510,7 +527,7 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
           </div>
 
           <div className="text-xs text-gray-500 text-center mt-4 sm:mt-6">
-            Photos from{" "}
+            {t.destinationsSection.photoCredit}{" "}
             <a
               href="https://unsplash.com"
               target="_blank"
@@ -529,22 +546,29 @@ export default function ResultsPage({ params }: { params: { id: string } }) {
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-voyabear-alt flex items-center justify-center mr-2 sm:mr-3 shadow-md">
                 <Compass className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
-              Brag About It
+              {t.shareSection.title}
             </h2>
             <p className="text-gray-700 mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
               <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-voyabear-secondary" />
-              Share your results and make your friends take it too!
+              {t.shareSection.subtitle}
             </p>
-            <ShareProfile profileId={params.id} profileName={profileData.profileName} profileData={profileData} />
+            <ShareProfile
+              profileId={params.id}
+              profileName={profileData.profileName}
+              profileData={profileData}
+              language={language}
+            />
           </Card>
 
           <Card className="p-4 sm:p-6 bg-white border-0 shadow-md rounded-xl card-glass">
-            <ResultsCta profileType={profileData.profileName} />
+            <ResultsCta profileType={profileData.profileName} language={language} />
           </Card>
         </div>
 
         <footer className="text-center text-gray-600 text-xs sm:text-sm mt-8 sm:mt-12">
-          <p>© {new Date().getFullYear()} VoyaBear. Made with ☕ and wanderlust.</p>
+          <p>
+            © {new Date().getFullYear()} VoyaBear. {t.footer}
+          </p>
         </footer>
       </div>
 

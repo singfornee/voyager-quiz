@@ -2,10 +2,10 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Loader2, CheckCircle2, Lock, Globe, AlertCircle } from "lucide-react"
+import { Loader2, CheckCircle2, Lock, AlertCircle } from "lucide-react"
 import { subscribeToMailchimp } from "@/lib/mailchimp"
 import { analyticsClient, getSessionId } from "@/lib/analytics-client"
 import { trackConversion } from "@/lib/ga-utils"
@@ -14,6 +14,7 @@ import Image from "next/image"
 interface SignupModalProps {
   onClose: () => void
   profileType?: string
+  language: "en" | "zh-TW"
 }
 
 // Translation content
@@ -30,62 +31,38 @@ const translations = {
     successTitle: "You're in!",
     successMessage: "We'll let you know when we launch!",
     continueButton: "Continue to my results",
-    switchLanguage: "Switch to Chinese",
     errorGeneric: "Something went wrong. Please try again.",
     errorEmail: "Please enter a valid email address.",
     errorRequired: "This field is required.",
     betaTag: "BETA",
   },
-  zh: {
-    title: "在我们生成您的个人资料时...",
-    description: "我们即将推出一款您会喜欢的智能旅行助手。想成为测试用户吗？",
+  "zh-TW": {
+    title: "在我們生成您的個人資料時...",
+    description: "我們即將推出一款您會喜歡的智能旅行助手。想成為測試用戶嗎？",
     nameLabel: "您的姓名",
-    emailLabel: "电子邮箱",
-    joinButton: "加入测试",
-    skipButton: "跳过",
-    loading: "请稍等...",
-    privacyNote: "我们会发送有趣的旅行内容，绝不发送垃圾邮件。",
+    emailLabel: "電子郵箱",
+    joinButton: "加入測試",
+    skipButton: "跳過",
+    loading: "請稍等...",
+    privacyNote: "我們會發送有趣的旅行內容，絕不發送垃圾郵件。",
     successTitle: "您已加入!",
-    successMessage: "我们会在产品上线时通知您!",
-    continueButton: "继续查看我的结果",
-    switchLanguage: "切换到英文",
-    errorGeneric: "出现错误，请重试。",
-    errorEmail: "请输入有效的电子邮箱地址。",
-    errorRequired: "此字段为必填项。",
-    betaTag: "测试版",
+    successMessage: "我們會在產品上線時通知您!",
+    continueButton: "繼續查看我的結果",
+    errorGeneric: "出現錯誤，請重試。",
+    errorEmail: "請輸入有效的電子郵箱地址。",
+    errorRequired: "此字段為必填項。",
+    betaTag: "測試版",
   },
 }
 
-export default function SignupModal({ onClose, profileType = "" }: SignupModalProps) {
+export default function SignupModal({ onClose, profileType = "", language = "en" }: SignupModalProps) {
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState("")
-  const [language, setLanguage] = useState<"en" | "zh">("en")
   const [emailError, setEmailError] = useState("")
   const [nameError, setNameError] = useState("")
-
-  // Auto-detect language on component mount and load from localStorage if available
-  useEffect(() => {
-    // First check localStorage for saved preference
-    const savedLanguage = localStorage.getItem("voyabear_language")
-    if (savedLanguage === "zh") {
-      setLanguage("zh")
-      return
-    }
-
-    // Otherwise detect from browser
-    const browserLang = navigator.language.toLowerCase()
-    if (browserLang.startsWith("zh")) {
-      setLanguage("zh")
-    }
-  }, [])
-
-  // Save language preference when it changes
-  useEffect(() => {
-    localStorage.setItem("voyabear_language", language)
-  }, [language])
 
   const t = translations[language]
 
@@ -120,28 +97,47 @@ export default function SignupModal({ onClose, profileType = "" }: SignupModalPr
       await subscribeToMailchimp(email, name, profileType)
       setIsSuccess(true)
 
-      // Track email submission
+      // Track email submission in our analytics
       analyticsClient.trackEvent("email_submitted", {
         sessionId: getSessionId(),
         source: "loading_modal",
         language,
       })
 
-      // Track conversion
+      // Track email conversion in Google Analytics
       trackConversion("email_signup", {
         profile_type: profileType,
         source: "loading_modal",
         language,
+        conversion_type: "email_popup",
       })
+
+      // Increment the counter for email submissions in our admin analytics
+      try {
+        // Use fetch to call our analytics API endpoint
+        fetch("/api/analytics/track", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            event: "email_submitted",
+            data: {
+              source: "loading_modal",
+              profileType,
+              language,
+            },
+          }),
+        })
+      } catch (analyticsError) {
+        // Don't fail the submission if analytics tracking fails
+        console.error("Error tracking analytics:", analyticsError)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : t.errorGeneric)
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  const toggleLanguage = () => {
-    setLanguage(language === "en" ? "zh" : "en")
   }
 
   return (
@@ -154,18 +150,6 @@ export default function SignupModal({ onClose, profileType = "" }: SignupModalPr
             <span className="text-white font-bold text-lg">VoyaBear</span>
             <span className="ml-2 bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-md">{t.betaTag}</span>
           </div>
-
-          {/* Language toggle - more visible now */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleLanguage}
-            className="h-8 px-2 text-white hover:bg-white/20 flex items-center transition-colors"
-            title={language === "en" ? t.switchLanguage : t.switchLanguage}
-          >
-            <Globe className="h-4 w-4 mr-1" />
-            <span className="text-xs">{language === "en" ? "中文" : "EN"}</span>
-          </Button>
         </div>
 
         <div className="p-5 sm:p-6 mt-10">

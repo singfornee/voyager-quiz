@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server"
-import { getCounter, getConversionRates, getQuestionDropoffRates, getShareMethodDistribution } from "@/lib/analytics"
+import {
+  getCounter,
+  getConversionRates,
+  getQuestionDropoffRates,
+  getShareMethodDistribution,
+  getEmailSourceDistribution,
+  getCounterWithSource,
+} from "@/lib/analytics"
 
 export async function GET() {
   try {
@@ -10,6 +17,10 @@ export async function GET() {
     const profileShared = (await getCounter("profile_shared")) || 0
     const emailSubmitted = (await getCounter("email_submitted")) || 0
 
+    // Get email submissions by source
+    const emailSubmittedPopup = (await getCounterWithSource("email_submitted", "loading_modal")) || 0
+    const emailSubmittedResults = (await getCounterWithSource("email_submitted", "results_page")) || 0
+
     // Get conversion rates
     const conversionRates = await getConversionRates()
 
@@ -19,6 +30,9 @@ export async function GET() {
     // Get share method distribution
     const shareMethodDistribution = await getShareMethodDistribution()
 
+    // Get email source distribution
+    const emailSourceDistribution = await getEmailSourceDistribution()
+
     return NextResponse.json({
       counters: {
         quizStarted,
@@ -26,10 +40,15 @@ export async function GET() {
         profileViewed,
         profileShared,
         emailSubmitted,
+        emailSubmittedBySource: {
+          popup: emailSubmittedPopup,
+          resultsPage: emailSubmittedResults,
+        },
       },
       conversionRates,
       dropoffRates,
       shareMethodDistribution,
+      emailSourceDistribution,
     })
   } catch (error) {
     console.error("Error fetching analytics:", error)
@@ -41,15 +60,22 @@ export async function GET() {
         profileViewed: 0,
         profileShared: 0,
         emailSubmitted: 0,
+        emailSubmittedBySource: {
+          popup: 0,
+          resultsPage: 0,
+        },
       },
       conversionRates: {
         completionRate: 0,
         shareRate: 0,
         emailConversionRate: 0,
+        emailPopupConversionRate: 0,
+        emailResultsConversionRate: 0,
         overallConversionRate: 0,
       },
       dropoffRates: {},
       shareMethodDistribution: {},
+      emailSourceDistribution: {},
     })
   }
 }
