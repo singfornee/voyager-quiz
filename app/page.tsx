@@ -4,7 +4,7 @@ import OfflineNotice from "@/components/offline-notice"
 import { Sparkles } from "lucide-react"
 import Image from "next/image"
 import dynamic from "next/dynamic"
-import Link from "next/link"
+import ResetQuizLink from "@/components/reset-quiz-link"
 import EarlyAccessButton from "@/components/early-access-button"
 
 // Lazy load the TravelQuiz component
@@ -52,9 +52,9 @@ export default function Home() {
       <header className="border-b border-gray-200 bg-white">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
+            <ResetQuizLink className="flex items-center">
               <span className="text-xl font-bold text-voyabear-primary">VoyaBear</span>
-            </Link>
+            </ResetQuizLink>
           </div>
 
           <div>

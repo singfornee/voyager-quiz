@@ -32,10 +32,10 @@ const questions = [
   {
     question: "First 24 hours in a new city — what's your move?",
     options: [
-      "🍜 Hunt for the best hole-in-the-wall local food",
-      "🧭 Drop the bags, walk 10,000 steps without a plan",
-      "🎟️ Stack my day with top-rated attractions",
-      "🛏️ Order room service and soak in the view",
+      "🍜 Hunt down the best local food spots",
+      "🧭 Drop my bags and walk 10,000 steps with no plan",
+      "🎟️ Pack the day with must-see sights",
+      "🛏️ Order room service and soak up the skyline",
     ],
     emoji: "🕒",
     illustration: "/travel-illustrations/suitcase.png",
@@ -43,10 +43,10 @@ const questions = [
   {
     question: "Which travel trophy would you brag about?",
     options: [
-      "🌋 Summited a volcano or climbed a mountain",
-      "🐬 Swam with wild dolphins or snorkeled a reef",
-      "🎭 Joined a once-in-a-lifetime local festival or sacred ceremony",
-      "🏰 Stayed overnight in a medieval castle or hidden historic village",
+      "🌋 Hiked a volcano or summited a mountain",
+      "🐬 Swam with dolphins or snorkeled a reef",
+      "🎭 Joined a sacred ceremony or wild local festival",
+      "🏰 Slept in a castle or a hidden historic village",
     ],
     emoji: "🏆",
     illustration: "/travel-illustrations/passport.png",
@@ -115,8 +115,11 @@ export default function TravelQuiz() {
     const sid = getSessionId()
     setSessionId(sid)
 
-    // Track quiz started event
-    analyticsClient.trackEvent("quiz_started", { sessionId: sid })
+    // Track quiz started event - don't block rendering with await
+    analyticsClient.trackEvent("quiz_started", { sessionId: sid }).catch((error) => {
+      // Silently handle any errors to prevent affecting the user experience
+      console.warn("Non-critical analytics error:", error)
+    })
   }, [])
 
   // Update the handleOptionSelect function to track option selection
@@ -145,11 +148,15 @@ export default function TravelQuiz() {
     setAnswers(newAnswers)
     console.log(`Current answers: ${newAnswers.join(", ")}`)
 
-    // Track question answered event
-    analyticsClient.trackEvent("question_answered", {
-      sessionId,
-      questionIndex: currentQuestion,
-    })
+    // Track question answered event - don't block with await
+    analyticsClient
+      .trackEvent("question_answered", {
+        sessionId,
+        questionIndex: currentQuestion,
+      })
+      .catch((error) => {
+        console.warn("Non-critical analytics error:", error)
+      })
 
     // Track in Google Analytics
     trackQuizInteraction(currentQuestion + 1, "answer_question", {
@@ -183,10 +190,14 @@ export default function TravelQuiz() {
         const profileId = await generateProfile(newAnswers)
 
         // Track quiz completed event
-        analyticsClient.trackEvent("quiz_completed", {
-          sessionId,
-          profileId,
-        })
+        analyticsClient
+          .trackEvent("quiz_completed", {
+            sessionId,
+            profileId,
+          })
+          .catch((error) => {
+            console.warn("Non-critical analytics error:", error)
+          })
 
         // Track profile generation in Google Analytics
         trackEvent("generate_profile", "quiz_completion", profileId)
@@ -198,11 +209,15 @@ export default function TravelQuiz() {
         setShowSignupModal(false) // Hide modal on error
 
         // Track drop-off due to error
-        analyticsClient.trackEvent("question_answered", {
-          sessionId,
-          questionIndex: currentQuestion,
-          dropoffPoint: "error_generating_profile",
-        })
+        analyticsClient
+          .trackEvent("question_answered", {
+            sessionId,
+            questionIndex: currentQuestion,
+            dropoffPoint: "error_generating_profile",
+          })
+          .catch((error) => {
+            console.warn("Non-critical analytics error:", error)
+          })
 
         // Track error in Google Analytics
         trackEvent(

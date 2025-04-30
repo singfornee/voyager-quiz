@@ -2,16 +2,26 @@
 
 import { storage } from "./storage"
 
-// Server-side analytics tracking
+// Server-side analytics tracking with improved error handling
 export async function trackServerEvent(event: string, data: any): Promise<void> {
   try {
-    // Store the event in the database
+    // Check if storage is available before proceeding
+    if (!isStorageAvailable()) {
+      console.warn("Storage is not available for analytics tracking")
+      return
+    }
+
+    // Store the event in the database with a timeout
     const eventKey = `analytics:event:${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
-    await storage.set(eventKey, {
-      event,
-      data,
-      timestamp: Date.now(),
-    })
+
+    await Promise.race([
+      storage.set(eventKey, {
+        event,
+        data,
+        timestamp: Date.now(),
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Storage operation timed out")), 2000)),
+    ])
 
     // Increment the counter for this event type
     const counterKey = `analytics:counter:${event}`
@@ -39,6 +49,25 @@ export async function trackServerEvent(event: string, data: any): Promise<void> 
       await storage.set(sourceKey, currentSourceCount + 1)
     }
   } catch (error) {
-    console.error("Error tracking server event:", error)
+    // Log the error but don't let it crash the application
+    console.error("Error tracking server event:", error instanceof Error ? error.message : "Unknown error")
+  }
+}
+
+// Helper function to check if storage is available
+function isStorageAvailable(): boolean {
+  try {
+    // Check if we're in a server environment
+    if (typeof window !== "undefined") {
+      return false // We're on the client side
+    }
+
+    // Check if KV environment variables are set
+    const hasKvConfig = !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
+
+    return hasKvConfig
+  } catch (error) {
+    console.error("Error checking storage availability:", error)
+    return false
   }
 }
