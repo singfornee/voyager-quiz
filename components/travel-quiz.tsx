@@ -22,7 +22,7 @@ const questions = [
     question: "Which of the following would you choose?",
     options: [
       "🌴 Leave me under a palm tree with no schedule",
-      "🗺️ Get me lost in side streets and hidden trails",
+      "🗺️ Hidden alleys, secret trails, cozy cafés",
       "🎟️ Museum hopping, guided tours, history deep-dives",
       "🏙️ Luxury stays, fine dining, rooftop sunsets",
     ],
