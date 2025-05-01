@@ -233,11 +233,37 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
       ),
       action: () => {
         try {
-          // For Instagram, we'll copy the text to clipboard
+          // First copy the text to clipboard
           navigator.clipboard.writeText(`${shareText}\n\nTake the quiz: ${shareUrl}`)
-          setShareError(null)
-          setCopied(true)
-          setTimeout(() => setCopied(false), 2000)
+
+          // Try to open Instagram app
+          const instagramUrl = "instagram://"
+          const instagramWebUrl = "https://instagram.com/"
+
+          // Create an invisible iframe to try opening the app
+          const iframe = document.createElement("iframe")
+          iframe.style.display = "none"
+          document.body.appendChild(iframe)
+
+          // Try to open the Instagram app
+          iframe.src = instagramUrl
+
+          // Set a timeout to open the web version if app doesn't open
+          setTimeout(() => {
+            document.body.removeChild(iframe)
+
+            // Show success message
+            setCopied(true)
+            setShareError("Content copied! Paste in Instagram to share with your followers.")
+
+            // Open Instagram website as fallback
+            window.open(instagramWebUrl, "_blank", "noopener,noreferrer")
+
+            setTimeout(() => {
+              setCopied(false)
+              setShareError(null)
+            }, 4000)
+          }, 500)
 
           // Track share event
           analyticsClient.trackEvent("profile_shared", {
@@ -253,7 +279,10 @@ export default function ShareProfile({ profileId, profileName, profileData }: Sh
           })
         } catch (error) {
           console.error("Error with Instagram share:", error)
-          setShareError("Couldn't copy text. Please try a different method.")
+          setShareError("Couldn't open Instagram. Try copying and sharing manually.")
+
+          // Still try to open Instagram website as fallback
+          window.open("https://instagram.com/", "_blank", "noopener,noreferrer")
         }
       },
       color: "bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCAF45]",
